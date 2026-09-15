@@ -82,7 +82,7 @@ class FilterDefinition {
 		$config['order']   = Sanitizer::choice( $config['order'], array( 'name', 'count', 'term_order', 'slug', 'id' ), 'name' );
 
 		$config['taxonomy'] = in_array( $config['source'], array( 'taxonomy', 'attribute' ), true )
-			? Sanitizer::taxonomy( $config['taxonomy'] )
+			? sanitize_key( (string) $config['taxonomy'] )
 			: '';
 
 		$config['meta_key'] = 'numeric' === $config['source']
@@ -214,7 +214,21 @@ class FilterDefinition {
 	 * Whether this filter reads terms from a taxonomy.
 	 */
 	public function is_taxonomy(): bool {
-		return in_array( $this->source(), array( 'taxonomy', 'attribute' ), true ) && '' !== $this->taxonomy();
+		$taxonomy = $this->taxonomy();
+
+		return in_array( $this->source(), array( 'taxonomy', 'attribute' ), true )
+			&& '' !== $taxonomy
+			&& taxonomy_exists( $taxonomy );
+	}
+
+	/**
+	 * Whether this filter is meant to narrow the result set.
+	 *
+	 * Sorting and an empty keyword box legitimately produce no constraint;
+	 * everything else must never be silently dropped.
+	 */
+	public function is_narrowing(): bool {
+		return ! in_array( $this->source(), array( 'sort', 'search' ), true );
 	}
 
 	/**

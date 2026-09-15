@@ -4,7 +4,7 @@ Tags: woocommerce, product filter, attribute filter, variation swatches, ajax fi
 Requires at least: 6.2
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -117,6 +117,20 @@ filtered URL directly.
 5. The first index build, with progress.
 
 == Changelog ==
+
+= 1.0.3 =
+* Fixed a serious correctness bug: a filter that could not be resolved was
+  silently dropped, so the query ran unfiltered and returned products that do
+  not carry the attribute at all. Any selection that cannot be compiled now
+  matches nothing instead of everything.
+* Attribute taxonomies are validated when a query is built rather than when a
+  filter set is normalised. A set normalised before the taxonomies were
+  registered used to lose the attribute name for the rest of the request.
+* A filter parameter that no configured filter claims is now resolved against
+  the real product taxonomies instead of being ignored.
+* Endless loading is taken over automatically when the theme loads endlessly,
+  with no change to the theme's own settings. The theme's loader is stood down
+  only once it is known that more than one page exists.
 
 = 1.0.2 =
 * Fixed: selecting one value could silently select others as well. After an AJAX

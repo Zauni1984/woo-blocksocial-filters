@@ -16,7 +16,6 @@ msgstr ""
 msgid "%d stars and up"
 msgstr "%d Sterne und mehr"
 
-#: includes/Admin/SettingsPage.php
 msgid "A theme that brings its own infinite scroll cannot follow an AJAX filter: its script is bound to the product list that was on the page when it loaded. Pick \"Load more\" or automatic loading here and switch the theme's own infinite scroll off, so filtering and endless loading come from one place."
 msgstr "Ein Theme mit eigenem Infinite Scroll kann einem AJAX-Filter nicht folgen: Sein Skript hängt an der Produktliste, die beim Laden der Seite da war. Wähle hier „Weitere laden“ oder automatisches Laden und schalte den Infinite Scroll des Themes ab, damit Filterung und Nachladen aus einer Hand kommen."
 
@@ -109,6 +108,10 @@ msgstr "Automatisch anwenden — bei jedem Klick"
 #: includes/Admin/SettingsPage.php
 msgid "Automatic"
 msgstr "Automatisch"
+
+#: includes/Admin/SettingsPage.php
+msgid "Automatic — take paging over when the theme loads endlessly"
+msgstr "Automatisch — Blättern übernehmen, wenn das Theme endlos nachlädt"
 
 msgid "Availability"
 msgstr "Verfügbarkeit"

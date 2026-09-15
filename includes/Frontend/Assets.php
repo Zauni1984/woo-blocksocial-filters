@@ -91,9 +91,30 @@ class Assets {
 				'rangeGlue' => \BlockSocial\Filters\Request\QueryState::RANGE_GLUE,
 				'scrollTop' => $settings->bool( 'scroll_top', true ),
 				'paging'    => \BlockSocial\Filters\Support\Sanitizer::choice(
-					$settings->get( 'pagination_mode', 'theme' ),
-					array( 'theme', 'loadmore', 'infinite' ),
-					'theme'
+					$settings->get( 'pagination_mode', 'auto' ),
+					array( 'auto', 'theme', 'loadmore', 'infinite' ),
+					'auto'
+				),
+				/**
+				 * Filter the elements a theme's own endless loading hangs off.
+				 *
+				 * When the plugin takes paging over it stands these down, so the
+				 * theme needs no configuration change.
+				 *
+				 * @param string[] $selectors CSS selectors.
+				 */
+				'themeLoaders' => (array) apply_filters(
+					'bsf_theme_loader_selectors',
+					array(
+						'.woocommerce-pagination',
+						'.oceanwp-pagination',
+						'.owp-pagination',
+						'.ocean-infinite-scroll',
+						'#owp-infinite-scroll',
+						'.infinite-scroll-request',
+						'.scroller-status',
+						'#infinite-handle',
+					)
 				),
 				'selectors' => array(
 					'products'   => (string) $settings->get( 'products_container', '' ),

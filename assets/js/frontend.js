@@ -265,7 +265,7 @@
 		this.setId = root.dataset.bsfSet || '';
 		this.pending = null;
 		this.controller = null;
-		this.paging = config.paging || 'theme';
+		this.paging = config.paging || 'auto';
 		this.page = parseInt( root.dataset.bsfPage, 10 ) || 1;
 		this.maxPages = parseInt( root.dataset.bsfMaxpages, 10 ) || 0;
 		this.currentUrl = window.location.href;
@@ -277,6 +277,7 @@
 		this.bind();
 		this.markSelections();
 		this.collapseOnMobile();
+		this.standDownThemeLoader();
 		this.syncLoadMore();
 	}
 
@@ -984,9 +985,49 @@
 		button.textContent = config.i18n.loadMore || 'Load more';
 		button.disabled = false;
 
-		if ( this.paging === 'infinite' ) {
+		if ( this.paging === 'infinite' || this.paging === 'auto' ) {
 			this.observe( button );
 		}
+	};
+
+	/**
+	 * Stop the theme's own endless loading from competing.
+	 *
+	 * Its script is bound to the product list that was on the page when it
+	 * loaded, so after an AJAX filter it either does nothing or appends the
+	 * wrong page. Replacing a node with its own clone drops every listener
+	 * bound to it, which retires the loader without touching theme settings.
+	 */
+	Panel.prototype.standDownThemeLoader = function () {
+		// Only take over once it is known there is more than one page. If the
+		// page count is unknown the theme stays in charge, so paging is never
+		// removed without a replacement.
+		if ( this.paging === 'theme' || this.maxPages <= 1 ) {
+			return;
+		}
+
+		( config.themeLoaders || [] ).forEach( function ( selector ) {
+			var nodes;
+
+			try {
+				nodes = qsa( selector );
+			} catch ( error ) {
+				return;
+			}
+
+			nodes.forEach( function ( node ) {
+				if ( ! node.parentNode || node.dataset.bsfRetired === '1' ) {
+					return;
+				}
+
+				var clone = node.cloneNode( true );
+
+				clone.dataset.bsfRetired = '1';
+				clone.hidden = true;
+
+				node.parentNode.replaceChild( clone, node );
+			} );
+		} );
 	};
 
 	Panel.prototype.setLoadMoreBusy = function ( busy ) {
@@ -1126,6 +1167,11 @@
 			pagination.hidden = true;
 		}
 
+		if ( this.paging !== 'theme' ) {
+			// Keep the position known even before the first filter click.
+			this.maxPages = this.maxPages || parseInt( this.root.dataset.bsfMaxpages, 10 ) || 0;
+		}
+
 		var countSelector = ( config.selectors && config.selectors.count ) || '.woocommerce-result-count';
 
 		qsa( countSelector ).concat( qsa( '[data-bsf-count]' ) ).forEach( function ( node ) {
@@ -1166,6 +1212,7 @@
 			this.scrollToResults();
 		}
 
+		this.standDownThemeLoader();
 		this.syncLoadMore();
 
 		// Themes and lazy load scripts listen for these; give them a chance to

@@ -138,6 +138,67 @@ $state->set_raw( array( 'f_color' => 'blue' ) );
 is_same( 'resolves slugs to term ids', array( 11 ), $state->term_ids( 'pa_color', array( 'blue' ) ) );
 is_same( 'unknown slugs resolve to nothing', array(), $state->term_ids( 'pa_color', array( 'purple' ) ) );
 
+echo "\nFail closed on broken filters\n";
+
+// Regression: a filter whose taxonomy is gone must yield nothing, never
+// everything. Silently dropping it showed products without the attribute.
+$broken = new FilterDefinition( FilterDefinition::normalize( array(
+	'source'   => 'attribute',
+	'taxonomy' => 'pa_gone',
+	'id'       => 'gone',
+	'url_key'  => 'gone',
+) ) );
+
+$state->set_raw( array( 'f_gone' => 'sommer' ) );
+$constraints = $state->constraints( array( $broken ) );
+
+is_same( 'a missing taxonomy yields one constraint', 1, count( $constraints ) );
+is_same( 'and that constraint matches nothing', 'none', $constraints[0]['type'] );
+
+$sql = ( new QueryBuilder() )->id_sql( $constraints );
+it( 'the SQL cannot match a row', false !== strpos( $sql, '1 = 0' ), $sql );
+
+// The same selection against a live taxonomy must filter normally.
+$working = new FilterDefinition( FilterDefinition::normalize( array(
+	'source'   => 'attribute',
+	'taxonomy' => 'pa_color',
+	'id'       => 'color',
+	'url_key'  => 'color',
+) ) );
+
+$state->set_raw( array( 'f_color' => 'blue' ) );
+$constraints = $state->constraints( array( $working ) );
+is_same( 'a live taxonomy still filters', 'terms', $constraints[0]['type'] );
+is_same( 'and resolves the term', array( 11 ), $constraints[0]['term_ids'] );
+
+// A prefixed parameter that no filter claims still has to narrow.
+$state->set_raw( array( 'f_color' => 'blue' ) );
+$constraints = $state->constraints( array() );
+is_same( 'an unclaimed key is resolved by name', 'terms', $constraints[0]['type'] );
+is_same( 'to the right taxonomy', 'pa_color', $constraints[0]['taxonomy'] );
+
+$state->set_raw( array( 'f_nonsense' => 'whatever' ) );
+$constraints = $state->constraints( array() );
+is_same( 'an unresolvable key matches nothing', 'none', $constraints[0]['type'] );
+
+// A numeric filter without a meta key must not widen either.
+$numeric = new FilterDefinition( FilterDefinition::normalize( array(
+	'source'  => 'numeric',
+	'id'      => 'weight',
+	'url_key' => 'weight',
+) ) );
+
+$state->set_raw( array( 'f_weight' => '1..5' ) );
+$constraints = $state->constraints( array( $numeric ) );
+is_same( 'a numeric filter with no meta key matches nothing', 'none', $constraints[0]['type'] );
+
+// Sorting legitimately adds no constraint.
+$sort = new FilterDefinition( FilterDefinition::normalize( array( 'source' => 'sort', 'id' => 'sort', 'url_key' => 'sort' ) ) );
+$state->set_raw( array( 'f_sort' => 'price' ) );
+is_same( 'sorting adds no constraint', 0, count( $state->constraints( array( $sort ) ) ) );
+
+$state->set_raw( array() );
+
 echo "\nURL building\n";
 
 $url = bsf()->url();
@@ -367,9 +428,10 @@ $html     = $renderer->render_set( $expanded );
 it( 'switching collapse_all off expands again', false === strpos( $html, 'is-collapsed' ), 'still collapsed with the option off' );
 
 // Paging mode is a closed set: an unknown value must fall back, never reach the page.
-is_same( 'paging mode falls back', 'theme', Sanitizer::choice( 'nonsense', array( 'theme', 'loadmore', 'infinite' ), 'theme' ) );
-is_same( 'paging mode accepts infinite', 'infinite', Sanitizer::choice( 'infinite', array( 'theme', 'loadmore', 'infinite' ), 'theme' ) );
-is_same( 'paging mode default is the theme', 'theme', bsf()->settings()->get( 'pagination_mode' ) );
+is_same( 'paging mode falls back', 'auto', Sanitizer::choice( 'nonsense', array( 'auto', 'theme', 'loadmore', 'infinite' ), 'auto' ) );
+is_same( 'paging mode accepts infinite', 'infinite', Sanitizer::choice( 'infinite', array( 'auto', 'theme', 'loadmore', 'infinite' ), 'auto' ) );
+// Default is automatic: the plugin takes paging over so no theme setting has to change.
+is_same( 'paging mode defaults to automatic', 'auto', bsf()->settings()->get( 'pagination_mode' ) );
 
 echo "\nColour guessing\n";
 

@@ -54,7 +54,7 @@ class Settings {
 			'archive_priority'    => 25,
 
 			// Product grid integration.
-			'pagination_mode'     => 'theme',        // theme | loadmore | infinite.
+			'pagination_mode'     => 'auto',         // auto | theme | loadmore | infinite.
 			'products_container'  => '',
 			'pagination_selector' => '',
 			'result_count_selector' => '',

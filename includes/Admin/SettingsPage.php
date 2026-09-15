@@ -238,12 +238,13 @@ class SettingsPage {
 					<th scope="row"><label for="bsf-pagination-mode"><?php esc_html_e( 'After filtering', 'woo-blocksocial-filters' ); ?></label></th>
 					<td>
 						<select name="pagination_mode" id="bsf-pagination-mode">
+							<option value="auto" <?php selected( $settings->get( 'pagination_mode' ), 'auto' ); ?>><?php esc_html_e( 'Automatic — take paging over when the theme loads endlessly', 'woo-blocksocial-filters' ); ?></option>
 							<option value="theme" <?php selected( $settings->get( 'pagination_mode' ), 'theme' ); ?>><?php esc_html_e( 'Use the theme pagination', 'woo-blocksocial-filters' ); ?></option>
 							<option value="loadmore" <?php selected( $settings->get( 'pagination_mode' ), 'loadmore' ); ?>><?php esc_html_e( 'Show a "Load more" button', 'woo-blocksocial-filters' ); ?></option>
 							<option value="infinite" <?php selected( $settings->get( 'pagination_mode' ), 'infinite' ); ?>><?php esc_html_e( 'Load the next page automatically while scrolling', 'woo-blocksocial-filters' ); ?></option>
 						</select>
 						<p class="description">
-							<?php esc_html_e( 'A theme that brings its own infinite scroll cannot follow an AJAX filter: its script is bound to the product list that was on the page when it loaded. Pick "Load more" or automatic loading here and switch the theme\'s own infinite scroll off, so filtering and endless loading come from one place.', 'woo-blocksocial-filters' ); ?>
+							<?php esc_html_e( 'A theme that brings its own endless loading cannot follow an AJAX filter: its script is bound to the product list that was on the page when it loaded, so it stops after the first page. On "Automatic" the plugin stands that loader down and continues the endless loading itself, with no change to the theme settings.', 'woo-blocksocial-filters' ); ?>
 						</p>
 					</td>
 				</tr>
@@ -419,7 +420,7 @@ class SettingsPage {
 			'post_in_threshold'     => max( 0, min( 20000, (int) ( $post['post_in_threshold'] ?? 2000 ) ) ),
 			'cache_ttl'             => max( 0, min( 86400, (int) ( $post['cache_ttl'] ?? 3600 ) ) ),
 			'async_index'           => ! empty( $post['async_index'] ),
-			'pagination_mode'       => Sanitizer::choice( $post['pagination_mode'] ?? '', array( 'theme', 'loadmore', 'infinite' ), 'theme' ),
+			'pagination_mode'       => Sanitizer::choice( $post['pagination_mode'] ?? '', array( 'auto', 'theme', 'loadmore', 'infinite' ), 'auto' ),
 			'products_container'    => Sanitizer::selector( $post['products_container'] ?? '' ),
 			'pagination_selector'   => Sanitizer::selector( $post['pagination_selector'] ?? '' ),
 			'result_count_selector' => Sanitizer::selector( $post['result_count_selector'] ?? '' ),

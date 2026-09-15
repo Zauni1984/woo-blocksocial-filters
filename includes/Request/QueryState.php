@@ -274,7 +274,11 @@ class QueryState {
 		$settings    = bsf()->settings();
 		$variation   = $settings->bool( 'variation_match', true );
 
+		$claimed = array();
+
 		foreach ( $definitions as $definition ) {
+			$claimed[ $definition->url_key() ] = true;
+
 			if ( $exclude_id === $definition->id() ) {
 				continue;
 			}
@@ -289,7 +293,27 @@ class QueryState {
 
 			if ( $constraint ) {
 				$constraints[] = $constraint;
+
+				continue;
 			}
+
+			// A filter the shopper actually set must never be dropped: dropping
+			// it would widen the query and show products that do not carry the
+			// attribute at all. Fail closed instead.
+			if ( $definition->is_narrowing() ) {
+				$constraints[] = array( 'type' => 'none' );
+			}
+		}
+
+		// Parameters that carry the filter prefix but match no definition are
+		// still meant to filter. Resolve them against the real taxonomies rather
+		// than ignoring them.
+		foreach ( $this->selections() as $key => $selection ) {
+			if ( isset( $claimed[ $key ] ) || self::SEARCH_PARAM === $key || $exclude_id === $key ) {
+				continue;
+			}
+
+			$constraints[] = $this->orphan_constraint( $key, $selection );
 		}
 
 		$search = $this->search();
@@ -321,6 +345,12 @@ class QueryState {
 	 */
 	private function constraint_for( FilterDefinition $definition, array $selection, bool $variation ): ?array {
 		$source = $definition->source();
+
+		// The taxonomy went missing (renamed attribute, plugin deactivated).
+		// Matching nothing is the only safe answer.
+		if ( in_array( $source, array( 'taxonomy', 'attribute' ), true ) && ! $definition->is_taxonomy() ) {
+			return array( 'type' => 'none' );
+		}
 
 		if ( $definition->is_taxonomy() && 'terms' === $selection['type'] ) {
 			$term_ids = $this->term_ids( $definition->taxonomy(), (array) $selection['values'], $definition->get( 'hierarchical', false ) );
@@ -354,9 +384,15 @@ class QueryState {
 				);
 
 			case 'numeric':
+				$meta_key = (string) $definition->get( 'meta_key', '' );
+
+				if ( '' === $meta_key ) {
+					return array( 'type' => 'none' );
+				}
+
 				return array(
 					'type' => 'numeric',
-					'key'  => (string) $definition->get( 'meta_key', '' ),
+					'key'  => $meta_key,
 					'min'  => $selection['min'] ?? null,
 					'max'  => $selection['max'] ?? null,
 				);
@@ -409,6 +445,72 @@ class QueryState {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Build a constraint for a filter parameter that no definition claims.
+	 *
+	 * The URL asked for it, so it has to narrow something. The key is matched
+	 * against the product taxonomies by name; if nothing matches, the request
+	 * yields no products rather than every product.
+	 *
+	 * @param string              $key       URL key.
+	 * @param array<string,mixed> $selection Parsed selection.
+	 *
+	 * @return array<string,mixed>
+	 */
+	private function orphan_constraint( string $key, array $selection ): array {
+		if ( 'terms' !== ( $selection['type'] ?? '' ) ) {
+			return array( 'type' => 'none' );
+		}
+
+		$taxonomy = $this->taxonomy_for_key( $key );
+
+		if ( '' === $taxonomy ) {
+			return array( 'type' => 'none' );
+		}
+
+		$term_ids = $this->term_ids( $taxonomy, (array) $selection['values'], is_taxonomy_hierarchical( $taxonomy ) );
+
+		return array(
+			'type'     => 'terms',
+			'taxonomy' => $taxonomy,
+			'term_ids' => empty( $term_ids ) ? array( 0 ) : $term_ids,
+			'logic'    => 'or',
+		);
+	}
+
+	/**
+	 * Guess the taxonomy a URL key refers to.
+	 *
+	 * @param string $key URL key.
+	 */
+	public function taxonomy_for_key( string $key ): string {
+		$key = Sanitizer::key( $key );
+
+		if ( '' === $key ) {
+			return '';
+		}
+
+		$candidates = array( 'pa_' . $key, $key );
+
+		if ( 'category' === $key ) {
+			array_unshift( $candidates, 'product_cat' );
+		}
+
+		if ( 'tag' === $key ) {
+			array_unshift( $candidates, 'product_tag' );
+		}
+
+		$allowed = array_keys( bsf()->registry()->taxonomies() );
+
+		foreach ( $candidates as $candidate ) {
+			if ( in_array( $candidate, $allowed, true ) && taxonomy_exists( $candidate ) ) {
+				return $candidate;
+			}
+		}
+
+		return '';
 	}
 
 	/**

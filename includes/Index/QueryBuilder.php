@@ -180,6 +180,12 @@ class QueryBuilder {
 					$where[] = 'p.product_id IN (' . implode( ',', $include ) . ')';
 					break;
 
+				case 'none':
+					// A filter that could not be resolved: match nothing. Never
+					// widen, or products without the attribute show up.
+					$where[] = '1 = 0';
+					break;
+
 				case 'exclude_ids':
 					$exclude = array_values( array_filter( array_map( 'absint', (array) ( $constraint['exclude'] ?? array() ) ) ) );
 
