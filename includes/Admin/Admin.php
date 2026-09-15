@@ -131,6 +131,17 @@ class Admin {
 				);
 				break;
 
+			case 'fill_colors':
+				$filled   = $this->settings_page->fill_colors();
+				$redirect = add_query_arg(
+					array(
+						'bsf_message' => 'colors-filled',
+						'bsf_count'   => $filled,
+					),
+					$redirect
+				);
+				break;
+
 			case 'delete_set':
 				$this->editor->delete( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				$redirect = add_query_arg( 'bsf_message', 'set-deleted', $redirect );
@@ -315,6 +326,24 @@ class Admin {
 	private function render_message(): void {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
 		$message = Sanitizer::key( $_GET['bsf_message'] ?? '' );
+
+		if ( 'colors-filled' === $message ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
+			$count = absint( $_GET['bsf_count'] ?? 0 );
+
+			printf(
+				'<div class="notice notice-success is-dismissible"><p>%s</p></div>',
+				esc_html(
+					sprintf(
+						/* translators: %s: number of attribute terms. */
+						_n( 'Swatch colour set for %s term.', 'Swatch colours set for %s terms.', $count, 'woo-blocksocial-filters' ),
+						number_format_i18n( $count )
+					)
+				)
+			);
+
+			return;
+		}
 
 		$messages = array(
 			'settings-saved' => __( 'Settings saved.', 'woo-blocksocial-filters' ),

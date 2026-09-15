@@ -9,6 +9,7 @@ namespace BlockSocial\Filters\Frontend;
 
 use BlockSocial\Filters\Filters\FilterDefinition;
 use BlockSocial\Filters\Support\Cache;
+use BlockSocial\Filters\Support\ColorNames;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -79,7 +80,19 @@ class Renderer {
 			$classes[] = sanitize_html_class( $args['class'] );
 		}
 
+		global $wp_query;
+
+		$current_page = 1;
+		$max_pages    = 0;
+
+		if ( $wp_query instanceof \WP_Query ) {
+			$current_page = max( 1, (int) ( $wp_query->get( 'paged' ) ?: 1 ) );
+			$max_pages    = (int) $wp_query->max_num_pages;
+		}
+
 		$data = array(
+			'data-bsf-page'      => (string) $current_page,
+			'data-bsf-maxpages'  => (string) $max_pages,
 			'data-bsf-set'       => $set['id'],
 			'data-bsf-mode'      => $args['mode'],
 			'data-bsf-layout'    => $args['layout'],
@@ -499,14 +512,11 @@ class Renderer {
 	 * @param array<string,mixed> $option Option data.
 	 */
 	private function swatch_style( array $option ): string {
-		$color  = (string) ( $option['color'] ?: '#dddddd' );
-		$color2 = (string) ( $option['color2'] ?? '' );
-
-		if ( '' !== $color2 ) {
-			return sprintf( 'background-image:linear-gradient(135deg,%s 0 50%%,%s 50%% 100%%);', $color, $color2 );
-		}
-
-		return sprintf( 'background-color:%s;', $color );
+		return ColorNames::style(
+			(string) ( $option['color'] ?? '' ),
+			(string) ( $option['color2'] ?? '' ),
+			(string) ( $option['gradient'] ?? '' )
+		);
 	}
 
 	/**
@@ -895,6 +905,7 @@ class Renderer {
 				'url'      => $state->toggle_url( $definition, $term['slug'] ),
 				'color'    => $term['color'],
 				'color2'   => $term['color2'],
+				'gradient' => $term['gradient'] ?? '',
 				'image'    => $term['image'],
 				'tooltip'  => $term['tooltip'],
 				'children' => array(),
@@ -1009,16 +1020,34 @@ class Renderer {
 
 				foreach ( $terms as $term ) {
 					$image_id = (int) get_term_meta( $term->term_id, 'bsf_image', true );
+					$color    = (string) get_term_meta( $term->term_id, 'bsf_color', true );
+					$color2   = (string) get_term_meta( $term->term_id, 'bsf_color2', true );
+					$gradient = '';
+					$explicit = '' !== $color;
+
+					// Nobody wants to pick a hex value for a hundred colour
+					// terms by hand, so an unset colour is guessed from the name.
+					if ( ! $explicit ) {
+						$guess    = ColorNames::resolve( (string) $term->name, (string) $term->slug );
+						$color    = $guess['color'];
+						$gradient = $guess['gradient'];
+
+						if ( '' === $color2 ) {
+							$color2 = $guess['color2'];
+						}
+					}
 
 					$out[] = array(
-						'term_id' => (int) $term->term_id,
-						'parent'  => (int) $term->parent,
-						'slug'    => (string) $term->slug,
-						'name'    => (string) $term->name,
-						'color'   => (string) get_term_meta( $term->term_id, 'bsf_color', true ),
-						'color2'  => (string) get_term_meta( $term->term_id, 'bsf_color2', true ),
-						'image'   => $image_id ? (string) wp_get_attachment_image_url( $image_id, 'thumbnail' ) : '',
-						'tooltip' => (string) get_term_meta( $term->term_id, 'bsf_tooltip', true ),
+						'term_id'  => (int) $term->term_id,
+						'parent'   => (int) $term->parent,
+						'slug'     => (string) $term->slug,
+						'name'     => (string) $term->name,
+						'color'    => $color,
+						'color2'   => $color2,
+						'gradient' => $gradient,
+						'explicit' => $explicit,
+						'image'    => $image_id ? (string) wp_get_attachment_image_url( $image_id, 'thumbnail' ) : '',
+						'tooltip'  => (string) get_term_meta( $term->term_id, 'bsf_tooltip', true ),
 					);
 				}
 

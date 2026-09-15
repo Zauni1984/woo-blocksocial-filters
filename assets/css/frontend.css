@@ -213,7 +213,7 @@
 }
 
 .bsf-option__link {
-	align-items: center;
+	align-items: flex-start;
 	border-radius: calc(var(--bsf-radius, 8px) - 2px);
 	color: inherit;
 	display: flex;
@@ -235,10 +235,9 @@
 
 .bsf-option__label {
 	flex: 1 1 auto;
+	hyphens: auto;
 	min-width: 0;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+	overflow-wrap: anywhere;
 }
 
 .bsf-option.is-selected > .bsf-option__link .bsf-option__label {
@@ -273,6 +272,7 @@
 
 .bsf-control {
 	background: var(--bsf-control-bg, #fff);
+	margin-top: 1px;
 	border: 1.5px solid var(--bsf-control-border, #c2c8d0);
 	flex: 0 0 auto;
 	height: 18px;
@@ -357,6 +357,7 @@
  * ------------------------------------------------------------------------ */
 
 .bsf-options--label .bsf-option__link {
+	align-items: center;
 	background: var(--bsf-label-bg, #fff);
 	border: 1px solid var(--bsf-label-border, #d9dee4);
 	border-radius: var(--bsf-radius, 8px);
@@ -399,7 +400,8 @@
 
 .bsf-options--label .bsf-option__label {
 	overflow: visible;
-	white-space: nowrap;
+	overflow-wrap: anywhere;
+	text-align: center;
 }
 
 .bsf-options--label .bsf-option__count {
@@ -413,17 +415,20 @@
 
 .bsf-options--color .bsf-option__link,
 .bsf-options--image .bsf-option__link {
+	align-items: center;
 	flex-direction: column;
 	gap: 5px;
 	padding: 4px;
 	text-align: center;
-	width: calc(var(--bsf-swatch-size, 34px) + 16px);
+	width: calc(var(--bsf-swatch-size, 34px) + 22px);
 }
 
 .bsf-options--color .bsf-option__label,
 .bsf-options--image .bsf-option__label {
 	font-size: .82em;
+	line-height: 1.25;
 	max-width: 100%;
+	overflow-wrap: anywhere;
 }
 
 .bsf-swatch {
@@ -747,6 +752,10 @@
 	filter: brightness(.96);
 }
 
+.bsf-chip__label {
+	overflow-wrap: anywhere;
+}
+
 .bsf-chip__remove {
 	font-size: 15px;
 	line-height: .8;
@@ -1031,4 +1040,57 @@
 
 .bsf-archive-bar .bsf--horizontal .bsf-chips {
 	margin-top: 10px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Load more / infinite loading
+ * ------------------------------------------------------------------------ */
+
+.bsf-loadmore {
+	background: var(--bsf-surface, #fff);
+	border: 1px solid var(--bsf-border-strong, #c8ced6);
+	border-radius: var(--bsf-radius, 8px);
+	color: var(--bsf-text, #1c1f24);
+	cursor: pointer;
+	display: block;
+	font-size: 1em;
+	font-weight: 600;
+	margin: 24px auto;
+	min-width: 220px;
+	padding: 13px 26px;
+	transition: background .14s ease, border-color .14s ease, opacity .14s ease;
+}
+
+.bsf-loadmore:hover:not(:disabled) {
+	background: var(--bsf-surface-alt, #f6f7f9);
+	border-color: var(--bsf-accent, #1f6feb);
+}
+
+.bsf-loadmore:focus-visible {
+	outline: 2px solid var(--bsf-focus-ring, #7aa7f5);
+	outline-offset: 2px;
+}
+
+.bsf-loadmore:disabled {
+	cursor: default;
+	opacity: .6;
+}
+
+.bsf-loadmore.is-busy {
+	padding-left: 44px;
+	position: relative;
+}
+
+.bsf-loadmore.is-busy::before {
+	animation: bsf-spin .7s linear infinite;
+	border: 2px solid var(--bsf-border, #e3e6ea);
+	border-radius: 50%;
+	border-top-color: var(--bsf-accent, #1f6feb);
+	content: "";
+	height: 16px;
+	left: 20px;
+	margin-top: -8px;
+	position: absolute;
+	top: 50%;
+	width: 16px;
 }

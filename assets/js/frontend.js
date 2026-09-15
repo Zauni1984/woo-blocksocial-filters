@@ -168,7 +168,7 @@
 	function panelKeys( panel ) {
 		var keys = {};
 
-		qsa( '[data-bsf-key]', panel ).forEach( function ( node ) {
+		qsa( '.bsf-filter[data-bsf-key]', panel ).forEach( function ( node ) {
 			keys[ node.dataset.bsfKey ] = true;
 		} );
 
@@ -265,12 +265,19 @@
 		this.setId = root.dataset.bsfSet || '';
 		this.pending = null;
 		this.controller = null;
+		this.paging = config.paging || 'theme';
+		this.page = parseInt( root.dataset.bsfPage, 10 ) || 1;
+		this.maxPages = parseInt( root.dataset.bsfMaxpages, 10 ) || 0;
+		this.currentUrl = window.location.href;
+		this.loading = false;
+		this.observer = null;
 
 		this.state = readState( root, window.location.href );
 
 		this.bind();
 		this.markSelections();
 		this.collapseOnMobile();
+		this.syncLoadMore();
 	}
 
 	/**
@@ -556,7 +563,7 @@
 		var working = this.mode === 'apply' && this.pending ? this.pending : this.state;
 		var selectedCount = 0;
 
-		qsa( '[data-bsf-key]', this.root ).forEach( function ( group ) {
+		qsa( '.bsf-filter[data-bsf-key]', this.root ).forEach( function ( group ) {
 			var selection = working[ group.dataset.bsfKey ];
 			var values = selection && selection.type === 'terms' ? selection.values : [];
 			var groupHasSelection = false;
@@ -844,7 +851,7 @@
 
 	/* ----- submitting --------------------------------------------------- */
 
-	Panel.prototype.submit = function ( url, skipHistory ) {
+	Panel.prototype.submit = function ( url, skipHistory, append ) {
 		if ( ! url ) {
 			return;
 		}
@@ -862,14 +869,29 @@
 		}
 
 		this.controller = new AbortController();
+		this.loading = true;
 		this.root.classList.add( 'is-loading' );
 
-		if ( products ) {
+		// Appending keeps the cards that are already on screen, so the whole
+		// grid must not be dimmed.
+		if ( products && ! append ) {
 			products.classList.add( 'bsf-busy' );
 		}
 
+		this.setLoadMoreBusy( true );
+
+		var allSets = panels.map( function ( panel ) {
+			return panel.setId;
+		} ).filter( Boolean );
+
+		if ( allSets.indexOf( this.setId ) === -1 ) {
+			allSets.push( this.setId );
+		}
+
 		var endpoint = config.rest + ( config.rest.indexOf( '?' ) === -1 ? '?' : '&' ) +
-			'url=' + encodeURIComponent( url ) + '&set=' + encodeURIComponent( this.setId );
+			'url=' + encodeURIComponent( url ) +
+			'&set=' + encodeURIComponent( this.setId ) +
+			'&sets=' + encodeURIComponent( allSets.join( ',' ) );
 
 		window.fetch( endpoint, {
 			method: 'GET',
@@ -885,10 +907,17 @@
 				return response.json();
 			} )
 			.then( function ( payload ) {
-				self.render( payload, url, skipHistory );
+				self.render( payload, url, skipHistory, append );
 			} )
 			.catch( function ( error ) {
 				if ( error && error.name === 'AbortError' ) {
+					return;
+				}
+
+				if ( append ) {
+					// Loading the next page failed; leave what is on screen and
+					// let the shopper retry rather than throwing the page away.
+					self.setLoadMoreBusy( false );
 					return;
 				}
 
@@ -896,12 +925,130 @@
 				window.location.href = url;
 			} )
 			.finally( function () {
+				self.loading = false;
 				self.root.classList.remove( 'is-loading' );
 
 				if ( products ) {
 					products.classList.remove( 'bsf-busy' );
 				}
+
+				self.setLoadMoreBusy( false );
 			} );
+	};
+
+	/**
+	 * Find or drop the plugin's own "load more" control.
+	 *
+	 * A theme that ships infinite scroll cannot follow an AJAX filter: its
+	 * script is bound to the list that was on the page when it loaded. In
+	 * loadmore/infinite mode the plugin takes paging over entirely so the two
+	 * never fight.
+	 */
+	Panel.prototype.syncLoadMore = function () {
+		if ( this.paging === 'theme' ) {
+			return;
+		}
+
+		var products = this.productsContainer();
+
+		if ( ! products || ! products.parentNode ) {
+			return;
+		}
+
+		var button = document.querySelector( '.bsf-loadmore' );
+		var more = this.maxPages > 0 && this.page < this.maxPages;
+
+		if ( ! more ) {
+			this.stopObserver();
+
+			if ( button ) {
+				button.remove();
+			}
+
+			return;
+		}
+
+		if ( ! button ) {
+			var self = this;
+
+			button = document.createElement( 'button' );
+			button.type = 'button';
+			button.className = 'bsf-loadmore';
+			button.addEventListener( 'click', function () {
+				self.loadNext();
+			} );
+
+			products.parentNode.insertBefore( button, products.nextSibling );
+		}
+
+		button.textContent = config.i18n.loadMore || 'Load more';
+		button.disabled = false;
+
+		if ( this.paging === 'infinite' ) {
+			this.observe( button );
+		}
+	};
+
+	Panel.prototype.setLoadMoreBusy = function ( busy ) {
+		var button = document.querySelector( '.bsf-loadmore' );
+
+		if ( ! button ) {
+			return;
+		}
+
+		button.disabled = !! busy;
+		button.classList.toggle( 'is-busy', !! busy );
+		button.textContent = busy
+			? ( config.i18n.loading || 'Loading…' )
+			: ( config.i18n.loadMore || 'Load more' );
+	};
+
+	/**
+	 * Load the next page and append it.
+	 */
+	Panel.prototype.loadNext = function () {
+		if ( this.loading || this.maxPages === 0 || this.page >= this.maxPages ) {
+			return;
+		}
+
+		var next;
+
+		try {
+			next = new URL( this.currentUrl || window.location.href, window.location.origin );
+		} catch ( error ) {
+			return;
+		}
+
+		next.searchParams.set( 'paged', String( this.page + 1 ) );
+
+		this.submit( next.toString(), true, true );
+	};
+
+	Panel.prototype.observe = function ( target ) {
+		if ( ! window.IntersectionObserver ) {
+			return;
+		}
+
+		this.stopObserver();
+
+		var self = this;
+
+		this.observer = new window.IntersectionObserver( function ( entries ) {
+			entries.forEach( function ( entry ) {
+				if ( entry.isIntersecting ) {
+					self.loadNext();
+				}
+			} );
+		}, { rootMargin: '400px 0px' } );
+
+		this.observer.observe( target );
+	};
+
+	Panel.prototype.stopObserver = function () {
+		if ( this.observer ) {
+			this.observer.disconnect();
+			this.observer = null;
+		}
 	};
 
 	Panel.prototype.productsContainer = function () {
@@ -910,7 +1057,27 @@
 		return document.querySelector( selector || '[data-bsf-products], ul.products, .products' );
 	};
 
-	Panel.prototype.render = function ( payload, url, skipHistory ) {
+	/**
+	 * Pull the product cards out of a response.
+	 *
+	 * The endpoint returns the loop wrapper too, so the cards are lifted out of
+	 * it and moved into the container the page already has. Replacing the
+	 * container node instead would detach anything the theme bound to it.
+	 */
+	Panel.prototype.extractItems = function ( html ) {
+		var holder = document.createElement( 'div' );
+		holder.innerHTML = html;
+
+		var first = holder.firstElementChild;
+
+		if ( first && holder.children.length === 1 && first.children.length ) {
+			return Array.prototype.slice.call( first.children );
+		}
+
+		return Array.prototype.slice.call( holder.childNodes );
+	};
+
+	Panel.prototype.render = function ( payload, url, skipHistory, append ) {
 		if ( ! payload ) {
 			return;
 		}
@@ -918,32 +1085,45 @@
 		var products = this.productsContainer();
 
 		if ( products && typeof payload.products === 'string' ) {
-			// The response already contains the loop wrapper, so swap the whole node.
-			var holder = document.createElement( 'div' );
-			holder.innerHTML = payload.products;
+			var items = this.extractItems( payload.products );
 
-			var replacement = holder.firstElementChild;
-
-			if ( replacement ) {
-				products.parentNode.replaceChild( replacement, products );
-			} else {
-				products.innerHTML = payload.products;
+			if ( ! append ) {
+				products.innerHTML = '';
 			}
+
+			items.forEach( function ( node ) {
+				products.appendChild( node );
+			} );
 		}
+
+		this.currentUrl = url;
+		this.page = parseInt( payload.page, 10 ) || 1;
+		this.maxPages = parseInt( payload.max_pages, 10 ) || 0;
 
 		var paginationSelector = ( config.selectors && config.selectors.pagination ) || '.woocommerce-pagination';
 		var pagination = document.querySelector( paginationSelector );
 
-		if ( typeof payload.pagination === 'string' ) {
+		if ( this.paging === 'theme' && typeof payload.pagination === 'string' ) {
 			if ( pagination ) {
+				// Keep the element and swap its contents: a theme script that
+				// bound to this node keeps working.
 				if ( payload.pagination ) {
-					pagination.outerHTML = payload.pagination;
+					var fresh = document.createElement( 'div' );
+					fresh.innerHTML = payload.pagination;
+					pagination.innerHTML = fresh.firstElementChild
+						? fresh.firstElementChild.innerHTML
+						: payload.pagination;
+					pagination.hidden = false;
 				} else {
-					pagination.remove();
+					pagination.innerHTML = '';
+					pagination.hidden = true;
 				}
 			} else if ( payload.pagination && products && products.parentNode ) {
 				products.insertAdjacentHTML( 'afterend', payload.pagination );
 			}
+		} else if ( this.paging !== 'theme' && pagination ) {
+			// The plugin owns paging in these modes.
+			pagination.hidden = true;
 		}
 
 		var countSelector = ( config.selectors && config.selectors.count ) || '.woocommerce-result-count';
@@ -954,25 +1134,54 @@
 			}
 		} );
 
-		if ( typeof payload.filters === 'string' && payload.filters ) {
-			this.replacePanel( payload.filters );
-		}
+		var bySet = payload.filters_by_set || {};
+		var self = this;
+
+		panels.forEach( function ( panel ) {
+			var html = bySet[ panel.setId ];
+
+			if ( typeof html !== 'string' || ! html ) {
+				html = panel === self && typeof payload.filters === 'string' ? payload.filters : '';
+			}
+
+			if ( html ) {
+				panel.replacePanel( html, url );
+
+				return;
+			}
+
+			// No fresh markup for this panel: at least keep its selection in
+			// step with the URL that is now current.
+			panel.state = readState( panel.root, url );
+			panel.pending = null;
+			panel.currentUrl = url;
+			panel.markSelections();
+		} );
 
 		if ( ! skipHistory ) {
 			window.history.pushState( { bsf: true }, '', url );
 		}
 
-		if ( config.scrollTop !== false ) {
+		if ( config.scrollTop !== false && ! append ) {
 			this.scrollToResults();
 		}
 
-		document.dispatchEvent( new CustomEvent( 'bsf:updated', { detail: { payload: payload, url: url } } ) );
+		this.syncLoadMore();
+
+		// Themes and lazy load scripts listen for these; give them a chance to
+		// pick up the cards that were just added.
+		document.dispatchEvent( new CustomEvent( 'bsf:updated', { detail: { payload: payload, url: url, append: !! append } } ) );
+
+		if ( window.jQuery ) {
+			window.jQuery( document.body ).trigger( 'post-load' );
+			window.jQuery( document.body ).trigger( 'wc_fragments_refreshed' );
+		}
 	};
 
 	/**
 	 * Swap the panel for the freshly counted markup, keeping open sections open.
 	 */
-	Panel.prototype.replacePanel = function ( html ) {
+	Panel.prototype.replacePanel = function ( html, url ) {
 		var open = {};
 		var drawerOpen = this.root.classList.contains( 'is-drawer-open' );
 
@@ -1024,7 +1233,11 @@
 			}
 		}
 
-		this.state = readState( this.root, window.location.href );
+		// Read back the URL this render belongs to. window.location is still the
+		// previous page at this point, and using it would re-apply the previous
+		// selection over the markup the server just produced.
+		this.state = readState( this.root, url || window.location.href );
+		this.currentUrl = url || this.currentUrl;
 		this.pending = null;
 		this.bind();
 		this.markSelections();
@@ -1059,7 +1272,7 @@
 		document.addEventListener( 'click', function ( event ) {
 			var link = event.target.closest( '.woocommerce-pagination a.page-numbers, .bsf-pagination a.page-numbers' );
 
-			if ( ! link || ! panels.length || ! panels[ 0 ].ajax ) {
+			if ( ! link || ! panels.length || ! panels[ 0 ].ajax || panels[ 0 ].paging !== 'theme' ) {
 				return;
 			}
 

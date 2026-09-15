@@ -4,7 +4,7 @@ Tags: woocommerce, product filter, attribute filter, variation swatches, ajax fi
 Requires at least: 6.2
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -117,6 +117,26 @@ filtered URL directly.
 5. The first index build, with progress.
 
 == Changelog ==
+
+= 1.0.2 =
+* Fixed: selecting one value could silently select others as well. After an AJAX
+  update the panel was re-read from the previous URL, which put the old
+  selection back over the markup the server had just produced.
+* Fixed: with more than one panel on a page (an archive bar and a sidebar
+  widget, say) only the clicked one was refreshed. The other kept a stale
+  selection and undid it on the next click. Every panel is now refreshed from
+  the same response.
+* New: results can be paged by the plugin itself, either with a "Load more"
+  button or by loading the next page while scrolling. A theme that brings its
+  own infinite scroll cannot follow an AJAX filter, because its script is bound
+  to the product list that was on the page when it loaded.
+* AJAX updates no longer replace the product container and pagination elements,
+  only their contents, so scripts bound to them keep working.
+* New: swatch colours are guessed from the term name in German and English, so a
+  catalogue of colour terms is not grey out of the box. An admin action writes
+  the guesses into the terms to make them editable. Explicit colours always win,
+  and a guessed colour never turns another attribute into colour swatches.
+* Fixed: long option names in a narrow sidebar were truncated; they wrap now.
 
 = 1.0.1 =
 * German translation (de_DE) for the whole plugin, front end and admin.

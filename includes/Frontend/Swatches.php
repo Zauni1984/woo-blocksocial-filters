@@ -9,6 +9,7 @@ namespace BlockSocial\Filters\Frontend;
 
 use BlockSocial\Filters\Index\Schema;
 use BlockSocial\Filters\Support\Cache;
+use BlockSocial\Filters\Support\ColorNames;
 use BlockSocial\Filters\Support\Sanitizer;
 
 defined( 'ABSPATH' ) || exit;
@@ -117,7 +118,9 @@ class Swatches {
 				continue;
 			}
 
-			if ( '' !== $term['color'] ) {
+			// Only a colour the shop actually set turns an attribute into
+			// colour swatches; a guessed one must not hijack, say, sizes.
+			if ( ! empty( $term['explicit'] ) ) {
 				return 'color';
 			}
 
@@ -243,13 +246,11 @@ class Swatches {
 				continue;
 			}
 
-			$style = '';
-
-			if ( '' !== $term['color'] && '' !== $term['color2'] ) {
-				$style = sprintf( 'background-image:linear-gradient(135deg,%s 0 50%%,%s 50%% 100%%);', $term['color'], $term['color2'] );
-			} elseif ( '' !== $term['color'] ) {
-				$style = sprintf( 'background-color:%s;', $term['color'] );
-			}
+			$style = ColorNames::style(
+				(string) $term['color'],
+				(string) $term['color2'],
+				(string) ( $term['gradient'] ?? '' )
+			);
 
 			$items[ $order[ $term['slug'] ] ] = array(
 				'slug'    => $term['slug'],

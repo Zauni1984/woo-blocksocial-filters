@@ -3,7 +3,7 @@
  * Plugin Name:       BlockSocial Filters for WooCommerce
  * Plugin URI:        https://github.com/zauni1984/woo-blocksocial-filters
  * Description:       High performance, index driven product filters for WooCommerce. Attribute, price, rating, stock and custom field filters with swatches, AJAX, SEO friendly URLs and variation swatches on single products.
- * Version:           1.0.1
+ * Version:           1.0.2
  * Requires at least: 6.2
  * Requires PHP:      7.4
  * Author:            BlockSocial
@@ -19,7 +19,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'BSF_VERSION', '1.0.1' );
+define( 'BSF_VERSION', '1.0.2' );
 define( 'BSF_PLUGIN_FILE', __FILE__ );
 define( 'BSF_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'BSF_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

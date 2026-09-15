@@ -90,6 +90,11 @@ class Assets {
 				'separator' => (string) $settings->get( 'pretty_separator', '-' ),
 				'rangeGlue' => \BlockSocial\Filters\Request\QueryState::RANGE_GLUE,
 				'scrollTop' => $settings->bool( 'scroll_top', true ),
+				'paging'    => \BlockSocial\Filters\Support\Sanitizer::choice(
+					$settings->get( 'pagination_mode', 'theme' ),
+					array( 'theme', 'loadmore', 'infinite' ),
+					'theme'
+				),
 				'selectors' => array(
 					'products'   => (string) $settings->get( 'products_container', '' ),
 					'pagination' => (string) $settings->get( 'pagination_selector', '' ),
@@ -102,6 +107,8 @@ class Assets {
 					'apply'     => __( 'Apply filters', 'woo-blocksocial-filters' ),
 					'noResults' => __( 'No products were found matching your selection.', 'woo-blocksocial-filters' ),
 					'error'     => __( 'Something went wrong. Please try again.', 'woo-blocksocial-filters' ),
+					'loadMore'  => __( 'Load more products', 'woo-blocksocial-filters' ),
+					'allLoaded' => __( 'All products loaded', 'woo-blocksocial-filters' ),
 				),
 			)
 		);

@@ -7,6 +7,8 @@
 
 namespace BlockSocial\Filters\Admin;
 
+use BlockSocial\Filters\Support\Cache;
+use BlockSocial\Filters\Support\ColorNames;
 use BlockSocial\Filters\Support\Colors;
 use BlockSocial\Filters\Support\Sanitizer;
 
@@ -230,6 +232,23 @@ class SettingsPage {
 				</tr>
 			</table>
 
+			<h2><?php esc_html_e( 'Paging results', 'woo-blocksocial-filters' ); ?></h2>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><label for="bsf-pagination-mode"><?php esc_html_e( 'After filtering', 'woo-blocksocial-filters' ); ?></label></th>
+					<td>
+						<select name="pagination_mode" id="bsf-pagination-mode">
+							<option value="theme" <?php selected( $settings->get( 'pagination_mode' ), 'theme' ); ?>><?php esc_html_e( 'Use the theme pagination', 'woo-blocksocial-filters' ); ?></option>
+							<option value="loadmore" <?php selected( $settings->get( 'pagination_mode' ), 'loadmore' ); ?>><?php esc_html_e( 'Show a "Load more" button', 'woo-blocksocial-filters' ); ?></option>
+							<option value="infinite" <?php selected( $settings->get( 'pagination_mode' ), 'infinite' ); ?>><?php esc_html_e( 'Load the next page automatically while scrolling', 'woo-blocksocial-filters' ); ?></option>
+						</select>
+						<p class="description">
+							<?php esc_html_e( 'A theme that brings its own infinite scroll cannot follow an AJAX filter: its script is bound to the product list that was on the page when it loaded. Pick "Load more" or automatic loading here and switch the theme\'s own infinite scroll off, so filtering and endless loading come from one place.', 'woo-blocksocial-filters' ); ?>
+						</p>
+					</td>
+				</tr>
+			</table>
+
 			<h2><?php esc_html_e( 'Grid selectors', 'woo-blocksocial-filters' ); ?></h2>
 			<table class="form-table" role="presentation">
 				<tr>
@@ -251,7 +270,65 @@ class SettingsPage {
 
 			<?php submit_button(); ?>
 		</form>
+
+		<form method="post" class="bsf-form bsf-fillcolors">
+			<?php wp_nonce_field( 'bsf_fill_colors' ); ?>
+			<input type="hidden" name="bsf_action" value="fill_colors" />
+			<h2><?php esc_html_e( 'Swatch colours', 'woo-blocksocial-filters' ); ?></h2>
+			<p class="description">
+				<?php esc_html_e( 'Attribute terms without a swatch colour already fall back to a colour guessed from their name, in German and English. Write those guesses into the terms to make them editable one by one. Colours you have already set are never overwritten.', 'woo-blocksocial-filters' ); ?>
+			</p>
+			<?php submit_button( __( 'Fill swatch colours from term names', 'woo-blocksocial-filters' ), 'secondary' ); ?>
+		</form>
 		<?php
+	}
+
+	/**
+	 * Persist guessed swatch colours so they can be adjusted per term.
+	 *
+	 * @return int Number of terms that received a colour.
+	 */
+	public function fill_colors(): int {
+		$filled = 0;
+
+		foreach ( array_keys( bsf()->registry()->attribute_taxonomies() ) as $taxonomy ) {
+			$terms = get_terms(
+				array(
+					'taxonomy'   => $taxonomy,
+					'hide_empty' => false,
+				)
+			);
+
+			if ( is_wp_error( $terms ) ) {
+				continue;
+			}
+
+			foreach ( $terms as $term ) {
+				if ( '' !== (string) get_term_meta( $term->term_id, 'bsf_color', true ) ) {
+					continue;
+				}
+
+				$guess = ColorNames::resolve( (string) $term->name, (string) $term->slug );
+
+				// Multicoloured terms stay on the runtime gradient: a single hex
+				// would be a downgrade.
+				if ( '' === $guess['color'] || '' !== $guess['gradient'] ) {
+					continue;
+				}
+
+				update_term_meta( $term->term_id, 'bsf_color', $guess['color'] );
+
+				if ( '' !== $guess['color2'] ) {
+					update_term_meta( $term->term_id, 'bsf_color2', $guess['color2'] );
+				}
+
+				$filled++;
+			}
+		}
+
+		Cache::flush();
+
+		return $filled;
 	}
 
 	/**
@@ -342,6 +419,7 @@ class SettingsPage {
 			'post_in_threshold'     => max( 0, min( 20000, (int) ( $post['post_in_threshold'] ?? 2000 ) ) ),
 			'cache_ttl'             => max( 0, min( 86400, (int) ( $post['cache_ttl'] ?? 3600 ) ) ),
 			'async_index'           => ! empty( $post['async_index'] ),
+			'pagination_mode'       => Sanitizer::choice( $post['pagination_mode'] ?? '', array( 'theme', 'loadmore', 'infinite' ), 'theme' ),
 			'products_container'    => Sanitizer::selector( $post['products_container'] ?? '' ),
 			'pagination_selector'   => Sanitizer::selector( $post['pagination_selector'] ?? '' ),
 			'result_count_selector' => Sanitizer::selector( $post['result_count_selector'] ?? '' ),

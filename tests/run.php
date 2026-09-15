@@ -366,6 +366,61 @@ $html     = $renderer->render_set( $expanded );
 
 it( 'switching collapse_all off expands again', false === strpos( $html, 'is-collapsed' ), 'still collapsed with the option off' );
 
+// Paging mode is a closed set: an unknown value must fall back, never reach the page.
+is_same( 'paging mode falls back', 'theme', Sanitizer::choice( 'nonsense', array( 'theme', 'loadmore', 'infinite' ), 'theme' ) );
+is_same( 'paging mode accepts infinite', 'infinite', Sanitizer::choice( 'infinite', array( 'theme', 'loadmore', 'infinite' ), 'theme' ) );
+is_same( 'paging mode default is the theme', 'theme', bsf()->settings()->get( 'pagination_mode' ) );
+
+echo "\nColour guessing\n";
+
+use BlockSocial\Filters\Support\ColorNames;
+
+$cases = array(
+	'Rot'          => '#d0021b',
+	'Schwarz'      => '#111111',
+	'Navy'         => '#001f3f',
+	'Onyx'         => '#0f0f10',
+	'Silber'       => '#c0c0c0',
+	'Natur'        => '#e5d3b3',
+	'Organic'      => '#8a9a5b',
+	'Rosé'         => '#e8b4b8',
+	'Purple'       => '#7b2fbf',
+	'Orange'       => '#ff8c00',
+	'Milky'        => '#f7f3ec',
+	'dunkelblau'   => '#12306b',
+	'Grün'         => '#2e9e4f',
+	'WEISS'        => '#ffffff',
+);
+
+foreach ( $cases as $name => $expected ) {
+	$guess = ColorNames::resolve( $name, sanitize_title( $name ) );
+	is_same( 'guesses ' . $name, $expected, $guess['color'] );
+}
+
+$two = ColorNames::resolve( 'Rosa/Weiß', 'rosa-weiss' );
+is_same( 'two tone name yields two colours', '#ff8fb1', $two['color'] );
+is_same( 'two tone second colour', '#ffffff', $two['color2'] );
+
+$two = ColorNames::resolve( 'Schwarz-Weiss', 'schwarz-weiss' );
+is_same( 'hyphenated two tone works', '#111111', $two['color'] );
+is_same( 'hyphenated second colour', '#ffffff', $two['color2'] );
+
+$multi = ColorNames::resolve( 'Bunt', 'bunt' );
+it( 'multicoloured names get a rainbow', '' !== $multi['gradient'], 'no gradient for Bunt' );
+
+$multi = ColorNames::resolve( 'Mixed', 'mixed' );
+it( 'Mixed is multicoloured too', '' !== $multi['gradient'] );
+
+$none = ColorNames::resolve( 'Spion', 'spion' );
+is_same( 'an unknown name guesses nothing', '', $none['color'] );
+
+$size = ColorNames::resolve( 'XL', 'xl' );
+is_same( 'a size is not a colour', '', $size['color'] );
+
+it( 'style falls back to a neutral swatch', false !== strpos( ColorNames::style( '' ), '#dddddd' ) );
+it( 'style builds a two tone gradient', false !== strpos( ColorNames::style( '#000000', '#ffffff' ), 'linear-gradient' ) );
+it( 'an explicit gradient wins', false !== strpos( ColorNames::style( '#000000', '#ffffff', 'linear-gradient(red,blue)' ), 'red,blue' ) );
+
 echo "\nDesign tokens\n";
 
 $css = Colors::inline_css( bsf()->settings() );

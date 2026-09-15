@@ -17,6 +17,10 @@ msgid "%d stars and up"
 msgstr "%d Sterne und mehr"
 
 #: includes/Admin/SettingsPage.php
+msgid "A theme that brings its own infinite scroll cannot follow an AJAX filter: its script is bound to the product list that was on the page when it loaded. Pick \"Load more\" or automatic loading here and switch the theme's own infinite scroll off, so filtering and endless loading come from one place."
+msgstr "Ein Theme mit eigenem Infinite Scroll kann einem AJAX-Filter nicht folgen: Sein Skript hängt an der Produktliste, die beim Laden der Seite da war. Wähle hier „Weitere laden“ oder automatisches Laden und schalte den Infinite Scroll des Themes ab, damit Filterung und Nachladen aus einer Hand kommen."
+
+#: includes/Admin/SettingsPage.php
 msgid "AJAX filtering"
 msgstr "AJAX-Filterung"
 
@@ -57,6 +61,14 @@ msgid "Additional CSS"
 msgstr "Zusätzliches CSS"
 
 #: includes/Admin/SettingsPage.php
+msgid "After filtering"
+msgstr "Nach dem Filtern"
+
+#: includes/Frontend/Assets.php
+msgid "All products loaded"
+msgstr "Alle Produkte geladen"
+
+#: includes/Admin/SettingsPage.php
 msgid "Allow filters to collapse"
 msgstr "Filter einklappbar machen"
 
@@ -80,6 +92,10 @@ msgstr "Platzierung im Archiv"
 #: includes/Admin/SettingsPage.php
 msgid "Attribute display"
 msgstr "Attribut-Darstellung"
+
+#: includes/Admin/SettingsPage.php
+msgid "Attribute terms without a swatch colour already fall back to a colour guessed from their name, in German and English. Write those guesses into the terms to make them editable one by one. Colours you have already set are never overwritten."
+msgstr "Attribut-Begriffe ohne Swatch-Farbe greifen bereits auf eine aus dem Namen geratene Farbe zurück, auf Deutsch und Englisch. Schreibe diese Vorschläge in die Begriffe, um sie einzeln bearbeiten zu können. Bereits gesetzte Farben werden nie überschrieben."
 
 #: includes/Admin/FilterSetEditor.php
 #: includes/Compat/ElementorWidget.php
@@ -305,6 +321,10 @@ msgid "Featured"
 msgstr "Empfohlen"
 
 #: includes/Admin/SettingsPage.php
+msgid "Fill swatch colours from term names"
+msgstr "Swatch-Farben aus den Begriffsnamen befüllen"
+
+#: includes/Admin/SettingsPage.php
 #: includes/Compat/ElementorWidget.php
 #: includes/Compat/FilterWidget.php
 msgid "Filter set"
@@ -489,6 +509,14 @@ msgid "Leave empty to use the best hook for the active theme."
 msgstr "Leer lassen, um den passenden Hook des aktiven Themes zu verwenden."
 
 #: includes/Frontend/Assets.php
+msgid "Load more products"
+msgstr "Weitere Produkte laden"
+
+#: includes/Admin/SettingsPage.php
+msgid "Load the next page automatically while scrolling"
+msgstr "Nächste Seite beim Scrollen automatisch laden"
+
+#: includes/Frontend/Assets.php
 msgid "Loading…"
 msgstr "Wird geladen…"
 
@@ -566,6 +594,10 @@ msgstr "Optionen"
 #: includes/Admin/SettingsPage.php
 msgid "Pagination"
 msgstr "Seitennummerierung"
+
+#: includes/Admin/SettingsPage.php
+msgid "Paging results"
+msgstr "Ergebnisse blättern"
 
 #: includes/Admin/FilterSetEditor.php
 msgid "Panel"
@@ -784,6 +816,10 @@ msgstr "Form"
 msgid "Shape and spacing"
 msgstr "Form und Abstände"
 
+#: includes/Admin/SettingsPage.php
+msgid "Show a \"Load more\" button"
+msgstr "Button „Weitere laden“ anzeigen"
+
 #: includes/Admin/FilterSetEditor.php
 msgid "Show a clear all button"
 msgstr "Button „Alles zurücksetzen“ anzeigen"
@@ -915,6 +951,10 @@ msgstr "Swatch-Rahmen"
 msgid "Swatch colour"
 msgstr "Swatch-Farbe"
 
+#: includes/Admin/SettingsPage.php
+msgid "Swatch colours"
+msgstr "Swatch-Farben"
+
 #: includes/Admin/TermMeta.php
 msgid "Swatch image"
 msgstr "Swatch-Bild"
@@ -1004,6 +1044,10 @@ msgid "Use image"
 msgstr "Bild verwenden"
 
 #: includes/Admin/SettingsPage.php
+msgid "Use the theme pagination"
+msgstr "Seitennummerierung des Themes verwenden"
+
+#: includes/Admin/SettingsPage.php
 msgid "Variation swatches"
 msgstr "Varianten-Swatches"
 
@@ -1044,3 +1088,8 @@ msgid "%s product"
 msgid_plural "%s products"
 msgstr[0] "%s Produkt"
 msgstr[1] "%s Produkte"
+
+msgid "Swatch colour set for %s term."
+msgid_plural "Swatch colours set for %s terms."
+msgstr[0] "Swatch-Farbe für %s Begriff gesetzt."
+msgstr[1] "Swatch-Farben für %s Begriffe gesetzt."

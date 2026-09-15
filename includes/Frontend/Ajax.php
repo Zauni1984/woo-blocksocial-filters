@@ -51,10 +51,15 @@ class Ajax {
 						'required'          => true,
 						'sanitize_callback' => 'esc_url_raw',
 					),
-					'set' => array(
+					'set'  => array(
 						'type'              => 'string',
 						'required'          => false,
 						'sanitize_callback' => array( Sanitizer::class, 'key' ),
+					),
+					'sets' => array(
+						'type'              => 'string',
+						'required'          => false,
+						'sanitize_callback' => 'sanitize_text_field',
 					),
 				),
 			)
@@ -162,10 +167,34 @@ class Ajax {
 		$products   = $this->render_products( $query );
 		$pagination = $this->render_pagination( $query, $url );
 
-		$set  = bsf()->registry()->set( $set_id );
-		$html = $set ? bsf()->renderer()->render_set( $set ) : '';
+		// A page can carry more than one panel (an archive bar and a sidebar
+		// widget, say). All of them are re-rendered, otherwise the ones left
+		// behind keep a stale selection and undo it on the next click.
+		$requested = array_filter(
+			array_map(
+				array( Sanitizer::class, 'key' ),
+				explode( ',', (string) $request->get_param( 'sets' ) )
+			)
+		);
+
+		if ( empty( $requested ) && '' !== $set_id ) {
+			$requested = array( $set_id );
+		}
+
+		$by_set = array();
+
+		foreach ( array_slice( array_unique( $requested ), 0, 5 ) as $id ) {
+			$set = bsf()->registry()->set( $id );
+
+			if ( $set ) {
+				$by_set[ $id ] = bsf()->renderer()->render_set( $set );
+			}
+		}
+
+		$html = '' !== $set_id && isset( $by_set[ $set_id ] ) ? $by_set[ $set_id ] : (string) reset( $by_set );
 
 		$found = (int) $query->found_posts;
+		$page  = max( 1, (int) $query->get( 'paged', 1 ) );
 
 		wp_reset_postdata();
 
@@ -174,8 +203,11 @@ class Ajax {
 				'url'        => $url,
 				'products'   => $products,
 				'filters'    => $html,
+				'filters_by_set' => $by_set,
 				'pagination' => $pagination,
 				'found'      => $found,
+				'page'       => $page,
+				'max_pages'  => (int) $query->max_num_pages,
 				'count_text' => sprintf(
 					/* translators: %s: number of products. */
 					_n( '%s product', '%s products', $found, 'woo-blocksocial-filters' ),
