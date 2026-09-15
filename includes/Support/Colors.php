@@ -107,7 +107,7 @@ class Colors {
 					),
 					'count_bg'            => array(
 						'label'   => __( 'Counter background', 'woo-blocksocial-filters' ),
-						'default' => 'rgba(28,31,36,0.06)',
+						'default' => '#eef0f2',
 					),
 					'count_text'          => array(
 						'label'   => __( 'Counter text', 'woo-blocksocial-filters' ),

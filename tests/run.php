@@ -374,6 +374,19 @@ it( 'emits an accent variable', false !== strpos( $css, '--bsf-accent:' ), $css 
 it( 'emits label variables', false !== strpos( $css, '--bsf-label-active-bg:' ) );
 it( 'emits the radius variable', false !== strpos( $css, '--bsf-radius:' ) );
 
+// Every default has to be hex: the WordPress colour picker cannot parse rgba(),
+// and a field it cannot parse renders blank instead of pre-filled.
+$non_hex = array();
+
+foreach ( Colors::defaults() as $token => $value ) {
+	if ( ! preg_match( '/^#([A-Fa-f0-9]{3}){1,2}$/', $value ) ) {
+		$non_hex[] = $token . ' = ' . $value;
+	}
+}
+
+is_same( 'every colour default is a hex value the picker can pre-fill', array(), $non_hex );
+it( 'the palette is not empty', count( Colors::defaults() ) > 30 );
+
 $resolved = Colors::resolve( array( 'accent' => 'javascript:alert(1)', 'label_bg' => '#123456' ) );
 is_same( 'invalid colours fall back to the default', '#1f6feb', $resolved['accent'] );
 is_same( 'valid overrides win', '#123456', $resolved['label_bg'] );
