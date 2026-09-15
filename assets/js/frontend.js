@@ -415,6 +415,7 @@
 
 		this.bind();
 		this.markSelections();
+		this.resolveDrawer();
 		this.collapseOnMobile();
 		this.syncBridge( window.location.href );
 		this.standDownThemeLoader();
@@ -427,6 +428,63 @@
 	 * is a short list of headings rather than an endless page. Filters that
 	 * already carry a selection stay open so the shopper can see it.
 	 */
+	/**
+	 * Decide whether the mobile drawer can work where this panel sits.
+	 *
+	 * A transform, filter or containment on an ancestor makes position: fixed
+	 * resolve against that ancestor instead of the viewport, so a drawer inside
+	 * a theme's off canvas sidebar is pushed outside the visible area and the
+	 * filters cannot be reached at all. In that case the sidebar already is the
+	 * drawer, so the panel renders inline instead.
+	 */
+	Panel.prototype.resolveDrawer = function () {
+		if ( ! this.root.classList.contains( 'bsf--drawer' ) || window.innerWidth > 782 ) {
+			return;
+		}
+
+		var node = this.root.parentElement;
+		var trapped = false;
+
+		while ( node && node !== document.body && node !== document.documentElement ) {
+			var style = window.getComputedStyle( node );
+
+			if (
+				( style.transform && style.transform !== 'none' ) ||
+				( style.filter && style.filter !== 'none' ) ||
+				( style.perspective && style.perspective !== 'none' ) ||
+				( style.contain && style.contain.indexOf( 'paint' ) !== -1 ) ||
+				style.position === 'fixed'
+			) {
+				trapped = true;
+				break;
+			}
+
+			node = node.parentElement;
+		}
+
+		if ( ! trapped ) {
+			return;
+		}
+
+		this.root.classList.remove( 'bsf--drawer' );
+		this.root.classList.remove( 'is-drawer-open' );
+		this.root.classList.add( 'bsf--inline-mobile' );
+
+		document.body.style.overflow = '';
+
+		var toggle = this.root.querySelector( '.bsf-drawer-toggle' );
+
+		if ( toggle ) {
+			toggle.hidden = true;
+		}
+
+		var backdrop = this.root.querySelector( '.bsf-backdrop' );
+
+		if ( backdrop ) {
+			backdrop.hidden = true;
+		}
+	};
+
 	Panel.prototype.collapseOnMobile = function () {
 		if ( window.innerWidth > 782 ) {
 			return;
@@ -1534,6 +1592,7 @@
 		this.currentUrl = url || this.currentUrl;
 		this.pending = null;
 		this.bind();
+		this.resolveDrawer();
 		this.markSelections();
 	};
 

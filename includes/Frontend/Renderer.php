@@ -72,6 +72,12 @@ class Renderer {
 			$classes[] = 'bsf--sticky';
 		}
 
+		// Only a panel that renders the toggle may be turned into a drawer;
+		// without this the panel would be hidden on mobile with no way to open it.
+		if ( ! empty( $set['mobile_drawer'] ) ) {
+			$classes[] = 'bsf--drawer';
+		}
+
 		if ( $state->is_filtered() ) {
 			$classes[] = 'is-filtered';
 		}

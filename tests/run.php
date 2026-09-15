@@ -433,6 +433,30 @@ is_same( 'paging mode accepts infinite', 'infinite', Sanitizer::choice( 'infinit
 // Default is automatic: the plugin takes paging over so no theme setting has to change.
 is_same( 'paging mode defaults to automatic', 'auto', bsf()->settings()->get( 'pagination_mode' ) );
 
+// The mobile drawer styles must only apply where a toggle exists, otherwise the
+// panel is hidden on mobile with no way to open it.
+$with_drawer = bsf()->registry()->normalize_set(
+	array( 'title' => 'Filters', 'mobile_drawer' => true, 'filters' => $collapsing['filters'] ),
+	'drawered'
+);
+
+$renderer = new \BlockSocial\Filters\Frontend\Renderer();
+$html     = $renderer->render_set( $with_drawer );
+
+it( 'a drawer panel is marked', false !== strpos( $html, 'bsf--drawer' ), 'missing bsf--drawer' );
+it( 'and renders the toggle', false !== strpos( $html, 'bsf-drawer-toggle' ) );
+
+$no_drawer = bsf()->registry()->normalize_set(
+	array( 'title' => 'Filters', 'mobile_drawer' => false, 'filters' => $collapsing['filters'] ),
+	'plain'
+);
+
+$renderer = new \BlockSocial\Filters\Frontend\Renderer();
+$html     = $renderer->render_set( $no_drawer );
+
+it( 'a panel without a drawer is not marked', false === strpos( $html, 'bsf--drawer' ), 'panel would be hidden on mobile' );
+it( 'and renders no toggle', false === strpos( $html, 'bsf-drawer-toggle' ) );
+
 echo "\nColour guessing\n";
 
 use BlockSocial\Filters\Support\ColorNames;

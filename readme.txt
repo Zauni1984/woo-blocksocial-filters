@@ -4,7 +4,7 @@ Tags: woocommerce, product filter, attribute filter, variation swatches, ajax fi
 Requires at least: 6.2
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -117,6 +117,17 @@ filtered URL directly.
 5. The first index build, with progress.
 
 == Changelog ==
+
+= 1.0.5 =
+* Fixed: in a theme's own off canvas mobile sidebar only the filter button was
+  visible and the filters could not be reached. A transform on the sidebar makes
+  position: fixed resolve against the sidebar rather than the viewport, so the
+  drawer was pushed outside the visible area. The panel now detects that it sits
+  inside such a container and renders its filters in the sidebar itself, instead
+  of opening a second panel over it.
+* Fixed: a filter set with the mobile drawer switched off was hidden on mobile
+  with no way to open it. The drawer styles now apply only to panels that
+  actually render a toggle.
 
 = 1.0.4 =
 * Fixed: the theme's own endless loading appended unfiltered products. OceanWP

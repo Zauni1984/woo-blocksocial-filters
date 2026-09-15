@@ -947,11 +947,11 @@
  * ------------------------------------------------------------------------ */
 
 @media (max-width: 782px) {
-	.bsf-drawer-toggle {
+	.bsf--drawer .bsf-drawer-toggle {
 		display: flex;
 	}
 
-	.bsf .bsf-panel {
+	.bsf--drawer .bsf-panel {
 		background: var(--bsf-surface, #fff);
 		border: 0;
 		border-radius: 14px 14px 0 0;
@@ -970,12 +970,12 @@
 		z-index: 999;
 	}
 
-	.bsf.is-drawer-open .bsf-panel {
+	.bsf--drawer.is-drawer-open .bsf-panel {
 		transform: translateY(0);
 		visibility: visible;
 	}
 
-	.bsf-panel__head {
+	.bsf--drawer .bsf-panel__head {
 		display: flex;
 	}
 
@@ -1026,9 +1026,37 @@
 		padding: 13px 18px;
 	}
 
-	.bsf--sticky .bsf-panel {
+	.bsf--drawer.bsf--sticky .bsf-panel {
 		max-height: 86vh;
 		position: fixed;
+	}
+
+	/* A panel that does not become a drawer simply stays in the flow, with its
+	   filters collapsed, so it is never hidden without a way to open it. */
+	.bsf:not(.bsf--drawer) .bsf-panel {
+		bottom: auto;
+		box-shadow: none;
+		left: auto;
+		max-height: none;
+		padding: 0;
+		position: static;
+		right: auto;
+		transform: none;
+		visibility: visible;
+	}
+
+	/* Rendered inside the theme's own off canvas sidebar: show the heading,
+	   but not a close button that would only close our panel. */
+	.bsf--inline-mobile .bsf-panel__head {
+		display: flex;
+	}
+
+	.bsf--inline-mobile .bsf-panel__close {
+		display: none;
+	}
+
+	.bsf--inline-mobile .bsf-filters {
+		overflow: visible;
 	}
 }
 
