@@ -98,8 +98,9 @@ class Assets {
 				/**
 				 * Filter the elements a theme's own endless loading hangs off.
 				 *
-				 * When the plugin takes paging over it stands these down, so the
-				 * theme needs no configuration change.
+				 * Only consulted when the plugin was explicitly told to own paging;
+				 * on "Automatic" the theme keeps loading and its requests are
+				 * rewritten instead.
 				 *
 				 * @param string[] $selectors CSS selectors.
 				 */

@@ -194,7 +194,8 @@ wp bsf flush                            # flush cached counts
 ## Development
 
 ```
-php tests/run.php     # 126 assertions, no dependencies, no WordPress needed
+php tests/run.php            # 126 assertions, no dependencies, no WordPress needed
+node tests/js/bridge.test.js # 15 assertions on the theme request bridge
 composer lint         # php -l across the tree
 composer phpcs        # WordPress coding standards
 ```

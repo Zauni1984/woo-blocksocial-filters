@@ -4,7 +4,7 @@ Tags: woocommerce, product filter, attribute filter, variation swatches, ajax fi
 Requires at least: 6.2
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -117,6 +117,18 @@ filtered URL directly.
 5. The first index build, with progress.
 
 == Changelog ==
+
+= 1.0.4 =
+* Fixed: the theme's own endless loading appended unfiltered products. OceanWP
+  hands Metafizzy's infinite-scroll the selector ".older-posts a", which is read
+  once at start up and turned into a URL template, so every later page was
+  requested without the filters. The theme's page requests are now rewritten to
+  carry the active filters, which fixes both OceanWP's infinite scroll and its
+  load more button without changing a single theme setting.
+* The plugin no longer adds a second loader when the theme already loads
+  endlessly, which would have doubled every page.
+* The theme's "older posts" link is kept pointing at the filtered next page and
+  is hidden once the last page is reached.
 
 = 1.0.3 =
 * Fixed a serious correctness bug: a filter that could not be resolved was

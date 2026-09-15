@@ -255,6 +255,145 @@
 	}
 
 	/* ---------------------------------------------------------------------
+	 * Request bridge
+	 *
+	 * A theme's endless loading builds its next page URL from the link that was
+	 * in the document when the page loaded, and keeps using that template. After
+	 * an AJAX filter it therefore requests the unfiltered page 2 and appends
+	 * products that do not match the filter at all. OceanWP is one such theme:
+	 * it hands Metafizzy's infinite-scroll `path: ".older-posts a"`, which is
+	 * read once and turned into a URL template, and it fetches with fetch().
+	 *
+	 * Rather than disabling the theme, its outgoing request is rewritten to
+	 * carry the active filters. Only same origin GETs for this very archive are
+	 * touched.
+	 * ------------------------------------------------------------------ */
+
+	var bridgeQuery = '';
+	var bridgeBase = '';
+	var bridgeInstalled = false;
+
+	/**
+	 * Decide whether a request is the theme asking for another page of this
+	 * archive, and if so return the filtered URL to use instead.
+	 */
+	function bridgeUrl( url, method ) {
+		if ( ! bridgeQuery || ! bridgeBase || ! url ) {
+			return '';
+		}
+
+		if ( method && String( method ).toUpperCase() !== 'GET' ) {
+			return '';
+		}
+
+		var parsed;
+
+		try {
+			parsed = new URL( url, window.location.origin );
+		} catch ( error ) {
+			return '';
+		}
+
+		if ( parsed.origin !== window.location.origin ) {
+			return '';
+		}
+
+		var path = parsed.pathname;
+
+		// Never touch API, admin or WooCommerce endpoints.
+		if ( path.indexOf( '/wp-json/' ) !== -1 ||
+			path.indexOf( 'admin-ajax.php' ) !== -1 ||
+			path.indexOf( '/wp-admin/' ) !== -1 ||
+			parsed.searchParams.has( 'wc-ajax' ) ||
+			/\.(js|css|png|jpe?g|gif|svg|webp|woff2?)$/i.test( path ) ) {
+			return '';
+		}
+
+		// Only this archive, with or without a /page/N/ segment.
+		if ( path.replace( /\/page\/\d+\/?$/, '/' ) !== bridgeBase ) {
+			return '';
+		}
+
+		var prefix = config.prefix || 'f_';
+		var already = false;
+
+		parsed.searchParams.forEach( function ( value, key ) {
+			if ( key.indexOf( prefix ) === 0 ) {
+				already = true;
+			}
+		} );
+
+		if ( already ) {
+			return '';
+		}
+
+		new URLSearchParams( bridgeQuery ).forEach( function ( value, key ) {
+			parsed.searchParams.set( key, value );
+		} );
+
+		return parsed.toString();
+	}
+
+	function installBridge() {
+		if ( bridgeInstalled ) {
+			return;
+		}
+
+		bridgeInstalled = true;
+
+		var nativeFetch = window.fetch;
+
+		if ( typeof nativeFetch === 'function' ) {
+			window.fetch = function ( input, init ) {
+				try {
+					var target = typeof input === 'string' ? input : ( input && input.url );
+					var method = ( init && init.method ) || ( input && input.method ) || 'GET';
+					var rewritten = bridgeUrl( target, method );
+
+					if ( rewritten ) {
+						if ( typeof input === 'string' ) {
+							input = rewritten;
+						} else if ( window.Request ) {
+							input = new window.Request( rewritten, input );
+						}
+					}
+				} catch ( error ) {
+					// Never let the bridge break an unrelated request.
+				}
+
+				return nativeFetch.call( this, input, init );
+			};
+		}
+
+		var nativeOpen = window.XMLHttpRequest && window.XMLHttpRequest.prototype.open;
+
+		if ( nativeOpen ) {
+			window.XMLHttpRequest.prototype.open = function ( method, url ) {
+				try {
+					var rewritten = bridgeUrl( url, method );
+
+					if ( rewritten ) {
+						arguments[ 1 ] = rewritten;
+					}
+				} catch ( error ) {
+					// As above.
+				}
+
+				return nativeOpen.apply( this, arguments );
+			};
+		}
+	}
+
+	/**
+	 * Whether the theme brings its own endless loading.
+	 */
+	function themeLoaderPresent() {
+		return !! document.querySelector(
+			'.infinite-scroll-nav .older-posts a, .load-more-nav .older-posts a, .infinite-scroll-wrap'
+		);
+	}
+
+	/* ---------------------------------------------------------------------
 	 * Panel
 	 * ------------------------------------------------------------------ */
 
@@ -277,8 +416,10 @@
 		this.bind();
 		this.markSelections();
 		this.collapseOnMobile();
+		this.syncBridge( window.location.href );
 		this.standDownThemeLoader();
 		this.syncLoadMore();
+		this.syncThemeNav( window.location.href );
 	}
 
 	/**
@@ -950,6 +1091,20 @@
 			return;
 		}
 
+		// The theme already loads endlessly: let it, now that its requests carry
+		// the filters. Adding a second loader would double every page.
+		if ( this.paging === 'auto' && themeLoaderPresent() ) {
+			var own = document.querySelector( '.bsf-loadmore' );
+
+			if ( own ) {
+				own.remove();
+			}
+
+			this.stopObserver();
+
+			return;
+		}
+
 		var products = this.productsContainer();
 
 		if ( ! products || ! products.parentNode ) {
@@ -999,10 +1154,14 @@
 	 * bound to it, which retires the loader without touching theme settings.
 	 */
 	Panel.prototype.standDownThemeLoader = function () {
-		// Only take over once it is known there is more than one page. If the
-		// page count is unknown the theme stays in charge, so paging is never
-		// removed without a replacement.
-		if ( this.paging === 'theme' || this.maxPages <= 1 ) {
+		// Only when the plugin was explicitly told to own paging, and only once
+		// it is known there is more than one page, so paging is never removed
+		// without a replacement.
+		if ( 'loadmore' !== this.paging && 'infinite' !== this.paging ) {
+			return;
+		}
+
+		if ( this.maxPages <= 1 ) {
 			return;
 		}
 
@@ -1028,6 +1187,92 @@
 				node.parentNode.replaceChild( clone, node );
 			} );
 		} );
+	};
+
+	/**
+	 * Point the bridge at this archive and at the filters that are active.
+	 */
+	Panel.prototype.syncBridge = function ( url ) {
+		var prefix = this.root.dataset.bsfPrefix || config.prefix || 'f_';
+		var carried = [ 'ordr', 'srch', 'min_price', 'max_price' ];
+
+		try {
+			var current = new URL( url || window.location.href, window.location.origin );
+			var base = new URL( this.root.dataset.bsfBase || window.location.href, window.location.origin );
+			var keep = new URLSearchParams();
+
+			current.searchParams.forEach( function ( value, key ) {
+				if ( key.indexOf( prefix ) === 0 || carried.indexOf( key ) !== -1 ) {
+					keep.set( key, value );
+				}
+			} );
+
+			// Readable URLs keep the filters in the path; the server reads the
+			// query string in either mode, so the bridge always sends parameters.
+			if ( ! keep.toString() ) {
+				var state = readState( this.root, url || window.location.href );
+
+				Object.keys( state ).forEach( function ( key ) {
+					if ( key === '__sort' ) {
+						return;
+					}
+
+					var encoded = encodeSelection( state[ key ] );
+
+					if ( encoded ) {
+						keep.set( key === SEARCH_PARAM ? SEARCH_PARAM : prefix + key, encoded );
+					}
+				} );
+			}
+
+			bridgeBase = base.pathname.replace( /\/page\/\d+\/?$/, '/' );
+			bridgeQuery = keep.toString();
+		} catch ( error ) {
+			bridgeQuery = '';
+		}
+
+		if ( bridgeQuery ) {
+			installBridge();
+		}
+	};
+
+	/**
+	 * Keep the theme's "older posts" link pointing at the filtered next page.
+	 *
+	 * The load more variant reads this link fresh on every click, so updating it
+	 * is enough there. Infinite scroll templates its URL at start up, which is
+	 * what the request bridge takes care of.
+	 */
+	Panel.prototype.syncThemeNav = function ( url ) {
+		var nav = document.querySelector( '.infinite-scroll-nav, .load-more-nav' );
+
+		if ( ! nav ) {
+			return;
+		}
+
+		var link = nav.querySelector( '.older-posts a' );
+
+		if ( ! link ) {
+			return;
+		}
+
+		if ( this.maxPages > 0 && this.page >= this.maxPages ) {
+			link.removeAttribute( 'href' );
+			nav.hidden = true;
+
+			return;
+		}
+
+		nav.hidden = false;
+
+		try {
+			var next = new URL( url || window.location.href, window.location.origin );
+
+			next.searchParams.set( 'paged', String( this.page + 1 ) );
+			link.href = next.toString();
+		} catch ( error ) {
+			// Leave the link alone if the URL cannot be parsed.
+		}
 	};
 
 	Panel.prototype.setLoadMoreBusy = function ( busy ) {
@@ -1162,7 +1407,7 @@
 			} else if ( payload.pagination && products && products.parentNode ) {
 				products.insertAdjacentHTML( 'afterend', payload.pagination );
 			}
-		} else if ( this.paging !== 'theme' && pagination ) {
+		} else if ( pagination && ( 'loadmore' === this.paging || 'infinite' === this.paging ) ) {
 			// The plugin owns paging in these modes.
 			pagination.hidden = true;
 		}
@@ -1212,8 +1457,10 @@
 			this.scrollToResults();
 		}
 
+		this.syncBridge( url );
 		this.standDownThemeLoader();
 		this.syncLoadMore();
+		this.syncThemeNav( url );
 
 		// Themes and lazy load scripts listen for these; give them a chance to
 		// pick up the cards that were just added.

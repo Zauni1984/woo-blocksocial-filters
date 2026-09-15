@@ -244,7 +244,7 @@ class SettingsPage {
 							<option value="infinite" <?php selected( $settings->get( 'pagination_mode' ), 'infinite' ); ?>><?php esc_html_e( 'Load the next page automatically while scrolling', 'woo-blocksocial-filters' ); ?></option>
 						</select>
 						<p class="description">
-							<?php esc_html_e( 'A theme that brings its own endless loading cannot follow an AJAX filter: its script is bound to the product list that was on the page when it loaded, so it stops after the first page. On "Automatic" the plugin stands that loader down and continues the endless loading itself, with no change to the theme settings.', 'woo-blocksocial-filters' ); ?>
+							<?php esc_html_e( 'A theme that brings its own endless loading builds its next page URL once, when the page loads, so after an AJAX filter it would fetch the unfiltered next page. On "Automatic" the theme keeps doing the loading and the plugin rewrites those requests to carry the active filters, so nothing in the theme has to change.', 'woo-blocksocial-filters' ); ?>
 						</p>
 					</td>
 				</tr>

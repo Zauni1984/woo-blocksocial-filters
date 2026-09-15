@@ -16,8 +16,9 @@ msgstr ""
 msgid "%d stars and up"
 msgstr "%d Sterne und mehr"
 
-msgid "A theme that brings its own infinite scroll cannot follow an AJAX filter: its script is bound to the product list that was on the page when it loaded. Pick \"Load more\" or automatic loading here and switch the theme's own infinite scroll off, so filtering and endless loading come from one place."
-msgstr "Ein Theme mit eigenem Infinite Scroll kann einem AJAX-Filter nicht folgen: Sein Skript hängt an der Produktliste, die beim Laden der Seite da war. Wähle hier „Weitere laden“ oder automatisches Laden und schalte den Infinite Scroll des Themes ab, damit Filterung und Nachladen aus einer Hand kommen."
+#: includes/Admin/SettingsPage.php
+msgid "A theme that brings its own endless loading builds its next page URL once, when the page loads, so after an AJAX filter it would fetch the unfiltered next page. On \"Automatic\" the theme keeps doing the loading and the plugin rewrites those requests to carry the active filters, so nothing in the theme has to change."
+msgstr "Ein Theme mit eigenem Endlos-Nachladen baut seine URL für die nächste Seite einmalig beim Laden der Seite, würde nach einem AJAX-Filter also die ungefilterte nächste Seite holen. Bei „Automatisch“ lädt das Theme weiterhin selbst nach, und das Plugin schreibt diese Anfragen so um, dass sie die aktiven Filter mitführen — am Theme muss nichts geändert werden."
 
 #: includes/Admin/SettingsPage.php
 msgid "AJAX filtering"

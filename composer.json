@@ -17,7 +17,7 @@
 		}
 	},
 	"scripts": {
-		"test": "php tests/run.php",
+		"test": "php tests/run.php && node tests/js/bridge.test.js",
 		"lint": "find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l",
 		"phpcs": "phpcs --standard=WordPress --extensions=php --ignore=vendor,node_modules ."
 	},
