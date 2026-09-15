@@ -1,0 +1,249 @@
+/**
+ * Variation swatches on single products and product cards.
+ */
+
+.bsf-swatch-wrap {
+	display: block;
+}
+
+/* The original select stays for WooCommerce's variation script, but out of sight. */
+.bsf-swatch-select {
+	height: 0;
+	margin: 0;
+	overflow: hidden;
+	opacity: 0;
+	pointer-events: none;
+	position: absolute;
+	width: 0;
+}
+
+.bsf-swatches {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--bsf-gap, 8px);
+	margin: 4px 0 6px;
+}
+
+.bsf-swatch-item {
+	align-items: center;
+	background: var(--bsf-label-bg, #fff);
+	border: 1px solid var(--bsf-label-border, #d9dee4);
+	border-radius: var(--bsf-radius, 8px);
+	cursor: pointer;
+	display: inline-flex;
+	justify-content: center;
+	line-height: 1;
+	padding: 0;
+	position: relative;
+	text-decoration: none;
+	transition: border-color .14s ease, box-shadow .14s ease, transform .14s ease, background .14s ease, color .14s ease;
+}
+
+.bsf-swatch-item:focus-visible {
+	outline: 2px solid var(--bsf-focus-ring, #7aa7f5);
+	outline-offset: 2px;
+}
+
+/* Labels ------------------------------------------------------------------ */
+
+.bsf-swatches--label .bsf-swatch-item,
+.bsf-loop-swatches.bsf-swatches--label .bsf-swatch-item {
+	color: var(--bsf-label-text, #25292e);
+	font-size: .92em;
+	font-weight: 500;
+	min-height: 40px;
+	min-width: 46px;
+	padding: 9px 14px;
+}
+
+.bsf-swatches--label .bsf-swatch-item:hover {
+	background: var(--bsf-label-hover-bg, #f2f5f9);
+	border-color: var(--bsf-label-hover-border, #9fb2c8);
+	transform: translateY(-1px);
+}
+
+.bsf-swatches--label .bsf-swatch-item.is-selected {
+	background: var(--bsf-label-active-bg, #1f6feb);
+	border-color: var(--bsf-label-active-border, #1f6feb);
+	box-shadow: 0 2px 8px rgba(31, 111, 235, .25);
+	color: var(--bsf-label-active-text, #fff);
+}
+
+/* Colour and image -------------------------------------------------------- */
+
+.bsf-swatches--color .bsf-swatch-item,
+.bsf-swatches--image .bsf-swatch-item {
+	border: 0;
+	background: none;
+	height: calc(var(--bsf-swatch-size, 34px) + 8px);
+	width: calc(var(--bsf-swatch-size, 34px) + 8px);
+}
+
+.bsf-swatch-item__color,
+.bsf-swatch-item__image {
+	border: 2px solid var(--bsf-swatch-border, #dfe3e8);
+	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .05);
+	display: block;
+	height: var(--bsf-swatch-size, 34px);
+	object-fit: cover;
+	transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease;
+	width: var(--bsf-swatch-size, 34px);
+}
+
+.bsf-swatches--circle .bsf-swatch-item__color,
+.bsf-swatches--circle .bsf-swatch-item__image {
+	border-radius: 50%;
+}
+
+.bsf-swatches--rounded .bsf-swatch-item__color,
+.bsf-swatches--rounded .bsf-swatch-item__image {
+	border-radius: var(--bsf-radius, 8px);
+}
+
+.bsf-swatches--square .bsf-swatch-item__color,
+.bsf-swatches--square .bsf-swatch-item__image {
+	border-radius: 2px;
+}
+
+.bsf-swatch-item:hover .bsf-swatch-item__color,
+.bsf-swatch-item:hover .bsf-swatch-item__image {
+	transform: scale(1.07);
+}
+
+.bsf-swatch-item.is-selected .bsf-swatch-item__color,
+.bsf-swatch-item.is-selected .bsf-swatch-item__image {
+	border-color: var(--bsf-swatch-selected, #1c1f24);
+	box-shadow: 0 0 0 2px var(--bsf-surface, #fff) inset, 0 2px 6px rgba(0, 0, 0, .2);
+}
+
+.bsf-swatches--color .bsf-swatch-item.is-selected::after,
+.bsf-swatches--image .bsf-swatch-item.is-selected::after {
+	border-bottom: 2px solid #fff;
+	border-right: 2px solid #fff;
+	content: "";
+	filter: drop-shadow(0 0 1px rgba(0, 0, 0, .6));
+	height: 11px;
+	left: 50%;
+	pointer-events: none;
+	position: absolute;
+	top: 46%;
+	transform: translate(-50%, -50%) rotate(45deg);
+	width: 6px;
+}
+
+/* Unavailable combinations ------------------------------------------------ */
+
+.bsf-swatch-item.is-unavailable {
+	cursor: not-allowed;
+}
+
+.bsf-swatches[data-oos="dimmed"] .bsf-swatch-item.is-unavailable {
+	opacity: .35;
+}
+
+.bsf-swatches[data-oos="hidden"] .bsf-swatch-item.is-unavailable {
+	display: none;
+}
+
+.bsf-swatches[data-oos="crossed"] .bsf-swatch-item.is-unavailable {
+	opacity: .55;
+}
+
+.bsf-swatches[data-oos="crossed"] .bsf-swatch-item.is-unavailable::before {
+	background: var(--bsf-label-disabled-text, #a8aeb8);
+	content: "";
+	height: 2px;
+	left: 8%;
+	pointer-events: none;
+	position: absolute;
+	top: 50%;
+	transform: rotate(-45deg);
+	width: 84%;
+	z-index: 2;
+}
+
+.bsf-swatches--label .bsf-swatch-item.is-unavailable {
+	background: var(--bsf-label-disabled-bg, #f4f5f7);
+	border-color: var(--bsf-label-disabled-bg, #f4f5f7);
+	color: var(--bsf-label-disabled-text, #a8aeb8);
+}
+
+/* Tooltips ---------------------------------------------------------------- */
+
+.bsf-swatches[data-tooltips="1"] .bsf-swatch-item::after {
+	background: #1c1f24;
+	border-radius: 5px;
+	bottom: calc(100% + 7px);
+	color: #fff;
+	content: attr(title);
+	font-size: 11px;
+	left: 50%;
+	line-height: 1.3;
+	opacity: 0;
+	padding: 5px 8px;
+	pointer-events: none;
+	position: absolute;
+	transform: translateX(-50%);
+	transition: opacity .14s ease;
+	white-space: nowrap;
+	z-index: 10;
+}
+
+.bsf-swatches[data-tooltips="1"] .bsf-swatch-item:hover::after,
+.bsf-swatches[data-tooltips="1"] .bsf-swatch-item:focus-visible::after {
+	opacity: 1;
+}
+
+.bsf-swatches--color .bsf-swatch-item.is-selected::after,
+.bsf-swatches--image .bsf-swatch-item.is-selected::after {
+	/* The checkmark wins over the tooltip pseudo element. */
+	background: none;
+	border-radius: 0;
+	bottom: auto;
+	color: transparent;
+	content: "";
+	opacity: 1;
+	padding: 0;
+}
+
+/* Product card swatches --------------------------------------------------- */
+
+.bsf-loop-swatches {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px;
+	justify-content: center;
+	margin: 6px 0;
+}
+
+.bsf-loop-swatches .bsf-swatch-item__color,
+.bsf-loop-swatches .bsf-swatch-item__image {
+	border-width: 1px;
+	height: 20px;
+	width: 20px;
+}
+
+.bsf-loop-swatches.bsf-swatches--color .bsf-swatch-item,
+.bsf-loop-swatches.bsf-swatches--image .bsf-swatch-item {
+	height: 24px;
+	width: 24px;
+}
+
+.bsf-loop-swatches.bsf-swatches--label .bsf-swatch-item {
+	font-size: .78em;
+	min-height: 24px;
+	min-width: 26px;
+	padding: 4px 7px;
+}
+
+/* Reset link -------------------------------------------------------------- */
+
+.bsf-swatch-reset {
+	background: none;
+	border: 0;
+	color: var(--bsf-muted, #6b7280);
+	cursor: pointer;
+	font-size: .85em;
+	padding: 4px 0;
+	text-decoration: underline;
+}

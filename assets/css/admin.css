@@ -1,0 +1,199 @@
+/**
+ * Admin styles.
+ */
+
+.bsf-admin__body {
+	margin-top: 18px;
+	max-width: 1180px;
+}
+
+.bsf-admin .form-table th {
+	width: 220px;
+}
+
+.bsf-inline {
+	display: inline-block;
+	margin-left: 12px;
+}
+
+/* Filter sets ------------------------------------------------------------ */
+
+.bsf-sets {
+	display: grid;
+	gap: 24px;
+	grid-template-columns: 260px minmax(0, 1fr);
+}
+
+.bsf-sets__list ul {
+	margin: 0 0 14px;
+}
+
+.bsf-sets__list li {
+	border-bottom: 1px solid #e0e0e0;
+	padding: 8px 0;
+}
+
+.bsf-sets__list li.is-current a {
+	font-weight: 600;
+}
+
+.bsf-sets__list code {
+	display: block;
+	font-size: 11px;
+	margin-top: 3px;
+	opacity: .7;
+	word-break: break-all;
+}
+
+.bsf-filter-rows {
+	display: grid;
+	gap: 8px;
+}
+
+.bsf-filter-row {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+}
+
+.bsf-filter-row__head {
+	align-items: center;
+	display: flex;
+	gap: 12px;
+	padding: 10px 14px;
+}
+
+.bsf-filter-row__handle {
+	color: #8c8f94;
+	cursor: grab;
+}
+
+.bsf-filter-row__title {
+	flex: 1 1 auto;
+}
+
+.bsf-filter-row__body {
+	border-top: 1px solid #f0f0f1;
+	display: none;
+	gap: 14px 20px;
+	grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+	padding: 14px;
+}
+
+.bsf-filter-row.is-open .bsf-filter-row__body {
+	display: grid;
+}
+
+.bsf-field {
+	margin: 0;
+}
+
+.bsf-field label {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 4px;
+}
+
+.bsf-field input[type="text"],
+.bsf-field input[type="number"],
+.bsf-field select {
+	width: 100%;
+}
+
+.bsf-field--wide,
+.bsf-field--checks {
+	grid-column: 1 / -1;
+}
+
+.bsf-field--checks {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px 18px;
+}
+
+.bsf-field--checks label {
+	font-weight: 400;
+	margin: 0;
+}
+
+.bsf-delete-form {
+	margin-top: 14px;
+}
+
+/* Design tab ------------------------------------------------------------- */
+
+.bsf-color-grid {
+	display: grid;
+	gap: 14px;
+	grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+	margin-bottom: 26px;
+}
+
+.bsf-color-field {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	display: block;
+	padding: 12px;
+}
+
+.bsf-color-field__label {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 6px;
+}
+
+.bsf-color-field code {
+	display: block;
+	font-size: 11px;
+	margin-top: 6px;
+	opacity: .65;
+}
+
+.bsf-attr-row {
+	align-items: center;
+	display: flex;
+	gap: 12px;
+}
+
+.bsf-attr-row > span {
+	min-width: 160px;
+}
+
+/* Index tab -------------------------------------------------------------- */
+
+.bsf-index__stats {
+	margin: 16px 0;
+	max-width: 620px;
+}
+
+.bsf-progress {
+	margin: 18px 0;
+	max-width: 620px;
+}
+
+.bsf-progress__bar {
+	background: #f0f0f1;
+	border-radius: 999px;
+	height: 14px;
+	overflow: hidden;
+}
+
+.bsf-progress__bar span {
+	background: linear-gradient(90deg, #2271b1, #72aee6);
+	display: block;
+	height: 100%;
+	transition: width .2s ease;
+	width: 0;
+}
+
+.bsf-progress__text {
+	font-variant-numeric: tabular-nums;
+	margin: 8px 0 0;
+}
+
+@media (max-width: 960px) {
+	.bsf-sets {
+		grid-template-columns: 1fr;
+	}
+}
