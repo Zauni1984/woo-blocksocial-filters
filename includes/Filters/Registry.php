@@ -147,6 +147,7 @@ class Registry {
 			'layout'        => Sanitizer::choice( $set['layout'] ?? $settings->get( 'layout' ), array( 'vertical', 'horizontal' ), 'vertical' ),
 			'mode'          => Sanitizer::choice( $set['mode'] ?? $settings->get( 'mode' ), array( 'auto', 'apply', 'step' ), 'auto' ),
 			'columns'       => max( 1, min( 6, (int) ( $set['columns'] ?? 1 ) ) ),
+			'collapse_all'  => filter_var( $set['collapse_all'] ?? true, FILTER_VALIDATE_BOOLEAN ),
 			'show_chips'    => filter_var( $set['show_chips'] ?? true, FILTER_VALIDATE_BOOLEAN ),
 			'show_reset'    => filter_var( $set['show_reset'] ?? true, FILTER_VALIDATE_BOOLEAN ),
 			'show_count'    => filter_var( $set['show_count'] ?? true, FILTER_VALIDATE_BOOLEAN ),
@@ -302,11 +303,10 @@ class Registry {
 	public function auto_set(): array {
 		$filters = array(
 			array(
-				'source'      => 'price',
-				'display'     => 'range',
-				'id'          => 'price',
-				'url_key'     => 'price',
-				'title'       => __( 'Price', 'woo-blocksocial-filters' ),
+				'source'  => 'price',
+				'display' => 'range',
+				'id'      => 'price',
+				'url_key' => 'price',
 			),
 		);
 
@@ -351,7 +351,6 @@ class Registry {
 			'display' => 'toggle',
 			'id'      => 'instock',
 			'url_key' => 'instock',
-			'title'   => __( 'In stock only', 'woo-blocksocial-filters' ),
 		);
 
 		return $this->normalize_set(

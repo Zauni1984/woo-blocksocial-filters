@@ -331,6 +331,41 @@ it( 'the hostile term is actually rendered', false !== strpos( $html, 'data-bsf-
 it( 'escapes term names', false === strpos( $html, '<img src=x' ), 'unescaped term name in output' );
 it( 'escapes to entities instead', false !== strpos( $html, '&lt;img src=x' ) );
 
+// A sidebar panel must not render every attribute list expanded.
+$collapsing = bsf()->registry()->normalize_set(
+	array(
+		'title'        => 'Filters',
+		'collapse_all' => true,
+		'filters'      => array(
+			array( 'source' => 'attribute', 'taxonomy' => 'pa_color', 'display' => 'label', 'id' => 'color', 'url_key' => 'color' ),
+			array( 'source' => 'attribute', 'taxonomy' => 'pa_size', 'display' => 'checkbox', 'id' => 'size', 'url_key' => 'size' ),
+		),
+	),
+	'collapsing'
+);
+
+is_same( 'collapse_all defaults to on', true, $collapsing['collapse_all'] );
+
+$state->set_raw( array( 'f_color' => 'blue' ) );
+$wpdb->results['GROUP BY facet.term_id'] = array( array( 'term_id' => 11, 'cnt' => 7 ), array( 'term_id' => 21, 'cnt' => 2 ) );
+
+$renderer = new \BlockSocial\Filters\Frontend\Renderer();
+$html     = $renderer->render_set( $collapsing );
+
+it( 'collapsed filters are marked', false !== strpos( $html, 'is-collapsed' ), 'nothing collapsed' );
+it( 'collapsed bodies carry the hidden attribute', false !== strpos( $html, 'bsf-filter__body" id="bsf-body-size" hidden' ), $html );
+it( 'a filter with an active selection stays open', false === strpos( $html, 'id="bsf-body-color" hidden' ), 'the active filter was collapsed too' );
+
+$expanded = bsf()->registry()->normalize_set(
+	array( 'title' => 'Filters', 'collapse_all' => false, 'filters' => $collapsing['filters'] ),
+	'expanded'
+);
+
+$renderer = new \BlockSocial\Filters\Frontend\Renderer();
+$html     = $renderer->render_set( $expanded );
+
+it( 'switching collapse_all off expands again', false === strpos( $html, 'is-collapsed' ), 'still collapsed with the option off' );
+
 echo "\nDesign tokens\n";
 
 $css = Colors::inline_css( bsf()->settings() );

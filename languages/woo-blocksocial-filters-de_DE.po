@@ -1,0 +1,1046 @@
+# German translation for BlockSocial Filters for WooCommerce.
+# Copyright (C) 2026 BlockSocial
+# This file is distributed under the same licence as the plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: BlockSocial Filters for WooCommerce 1.0.1\n"
+"Report-Msgid-Bugs-To: https://github.com/zauni1984/woo-blocksocial-filters\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: de_DE\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Domain: woo-blocksocial-filters\n"
+
+#: includes/Frontend/Renderer.php
+msgid "%d stars and up"
+msgstr "%d Sterne und mehr"
+
+#: includes/Admin/SettingsPage.php
+msgid "AJAX filtering"
+msgstr "AJAX-Filterung"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "AND — all selected values"
+msgstr "UND — alle gewählten Werte"
+
+#: includes/Support/Colors.php
+msgid "Accent"
+msgstr "Akzent"
+
+#: includes/Support/Colors.php
+msgid "Accent (hover)"
+msgstr "Akzent (Hover)"
+
+#: includes/Support/Colors.php
+msgid "Active filter chip"
+msgstr "Chip für aktiven Filter"
+
+#: includes/Support/Colors.php
+msgid "Active filter chip text"
+msgstr "Chip-Text für aktiven Filter"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Add filter"
+msgstr "Filter hinzufügen"
+
+#: includes/Admin/SettingsPage.php
+msgid "Add noindex when more than one filter is active"
+msgstr "noindex setzen, wenn mehr als ein Filter aktiv ist"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Add set"
+msgstr "Satz hinzufügen"
+
+#: includes/Admin/SettingsPage.php
+msgid "Additional CSS"
+msgstr "Zusätzliches CSS"
+
+#: includes/Admin/SettingsPage.php
+msgid "Allow filters to collapse"
+msgstr "Filter einklappbar machen"
+
+#: includes/Frontend/Renderer.php
+msgid "Any %s"
+msgstr "Alle %s"
+
+#: includes/Frontend/Assets.php
+#: includes/Frontend/Renderer.php
+msgid "Apply filters"
+msgstr "Filter anwenden"
+
+#: includes/Admin/SettingsPage.php
+msgid "Archive layout"
+msgstr "Archiv-Layout"
+
+#: includes/Admin/SettingsPage.php
+msgid "Archive placement"
+msgstr "Platzierung im Archiv"
+
+#: includes/Admin/SettingsPage.php
+msgid "Attribute display"
+msgstr "Attribut-Darstellung"
+
+#: includes/Admin/FilterSetEditor.php
+#: includes/Compat/ElementorWidget.php
+msgid "Auto submit"
+msgstr "Automatisch anwenden"
+
+#: includes/Admin/SettingsPage.php
+msgid "Auto submit — apply on every click"
+msgstr "Automatisch anwenden — bei jedem Klick"
+
+#: includes/Admin/SettingsPage.php
+msgid "Automatic"
+msgstr "Automatisch"
+
+msgid "Availability"
+msgstr "Verfügbarkeit"
+
+#: includes/Frontend/Renderer.php
+msgid "Average rating"
+msgstr "Durchschnittliche Bewertung"
+
+#: includes/Support/Colors.php
+msgid "Base"
+msgstr "Basis"
+
+#: includes/Admin/SettingsPage.php
+msgid "Behaviour"
+msgstr "Verhalten"
+
+#: includes/Admin/Admin.php
+msgid "BlockSocial Filters"
+msgstr "BlockSocial Filters"
+
+#: includes/Plugin.php
+msgid "BlockSocial Filters requires WooCommerce to be installed and active."
+msgstr "BlockSocial Filters benötigt ein installiertes und aktives WooCommerce."
+
+#: includes/Compat/FilterWidget.php
+msgid "BlockSocial Product Filters"
+msgstr "BlockSocial Produktfilter"
+
+#: includes/Support/Colors.php
+msgid "Border"
+msgstr "Rahmen"
+
+#: includes/Admin/Admin.php
+msgid "Build the index"
+msgstr "Index aufbauen"
+
+#: includes/Admin/Admin.php
+msgid "Building index…"
+msgstr "Index wird aufgebaut…"
+
+#: includes/Admin/IndexPage.php
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: includes/Support/Colors.php
+msgid "Checkbox / radio background"
+msgstr "Checkbox-/Radio-Hintergrund"
+
+#: includes/Support/Colors.php
+msgid "Checkbox / radio border"
+msgstr "Checkbox-/Radio-Rahmen"
+
+#: includes/Support/Colors.php
+msgid "Checkbox / radio checked"
+msgstr "Checkbox/Radio ausgewählt"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Checkboxes"
+msgstr "Checkboxen"
+
+#: includes/Admin/SettingsPage.php
+msgid "Circle"
+msgstr "Kreis"
+
+#: includes/Frontend/Renderer.php
+msgid "Clear all"
+msgstr "Alles zurücksetzen"
+
+#: includes/Frontend/Assets.php
+msgid "Clear selection"
+msgstr "Auswahl aufheben"
+
+#: includes/Frontend/Renderer.php
+msgid "Close filters"
+msgstr "Filter schließen"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Collapse into a drawer on mobile"
+msgstr "Auf Mobilgeräten als Drawer einklappen"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Collapsible"
+msgstr "Einklappbar"
+
+#: includes/Admin/FilterSetEditor.php
+#: includes/Admin/SettingsPage.php
+msgid "Colour swatches"
+msgstr "Farbfelder"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Columns"
+msgstr "Spalten"
+
+#: includes/Support/Colors.php
+msgid "Controls"
+msgstr "Bedienelemente"
+
+#: includes/Admin/SettingsPage.php
+msgid "Corner radius"
+msgstr "Eckenradius"
+
+#: includes/Admin/SettingsPage.php
+msgid "Count cache lifetime"
+msgstr "Cache-Dauer der Zähler"
+
+#: includes/Support/Colors.php
+msgid "Counter background"
+msgstr "Zähler-Hintergrund"
+
+#: includes/Support/Colors.php
+msgid "Counter text"
+msgstr "Zähler-Text"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Counters"
+msgstr "Zähler"
+
+#: includes/Admin/SettingsPage.php
+msgid "Cross out"
+msgstr "Durchstreichen"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Custom attribute order"
+msgstr "Eigene Attribut-Reihenfolge"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Custom field (numeric)"
+msgstr "Eigenes Feld (numerisch)"
+
+#: includes/Admin/SettingsPage.php
+msgid "Custom hook"
+msgstr "Eigener Hook"
+
+#: includes/Admin/FilterSetEditor.php
+#: includes/Filters/FilterDefinition.php
+msgid "Date"
+msgstr "Datum"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Date range"
+msgstr "Datumsbereich"
+
+#: includes/Frontend/Renderer.php
+msgid "Default"
+msgstr "Standard"
+
+#: includes/Admin/SettingsPage.php
+msgid "Default layout"
+msgstr "Standard-Layout"
+
+#: includes/Admin/SettingsPage.php
+msgid "Default mode"
+msgstr "Standard-Modus"
+
+#: includes/Admin/Admin.php
+msgid "Delete this filter?"
+msgstr "Diesen Filter löschen?"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Delete this set"
+msgstr "Diesen Satz löschen"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Description"
+msgstr "Beschreibung"
+
+#: includes/Admin/Admin.php
+msgid "Design"
+msgstr "Design"
+
+#: includes/Admin/Admin.php
+msgid "Design saved."
+msgstr "Design gespeichert."
+
+#: includes/Admin/SettingsPage.php
+msgid "Detected theme: %s. The bar is placed directly above the product grid and collapses into a drawer on mobile."
+msgstr "Erkanntes Theme: %s. Die Leiste sitzt direkt über dem Produktraster und klappt auf Mobilgeräten zu einem Drawer ein."
+
+#: includes/Admin/SettingsPage.php
+msgid "Dim"
+msgstr "Abschwächen"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Display"
+msgstr "Darstellung"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Dropdown"
+msgstr "Dropdown"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Edit"
+msgstr "Bearbeiten"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Enabled"
+msgstr "Aktiv"
+
+#: includes/Admin/SettingsPage.php
+msgid "Every colour below is a CSS variable, so themes and child themes can override any of them without touching the plugin."
+msgstr "Jede Farbe unten ist eine CSS-Variable, sodass Themes und Child-Themes sie überschreiben können, ohne das Plugin anzufassen."
+
+#: includes/Index/Indexer.php
+msgid "Every minute (BlockSocial Filters)"
+msgstr "Jede Minute (BlockSocial Filters)"
+
+#: includes/Admin/FilterSetEditor.php
+#: includes/Filters/FilterDefinition.php
+msgid "Featured"
+msgstr "Empfohlen"
+
+#: includes/Admin/SettingsPage.php
+#: includes/Compat/ElementorWidget.php
+#: includes/Compat/FilterWidget.php
+msgid "Filter set"
+msgstr "Filtersatz"
+
+#: includes/Admin/Admin.php
+msgid "Filter set deleted."
+msgstr "Filtersatz gelöscht."
+
+#: includes/Admin/Admin.php
+msgid "Filter set saved."
+msgstr "Filtersatz gespeichert."
+
+#: includes/Admin/Admin.php
+msgid "Filter sets"
+msgstr "Filtersätze"
+
+#: includes/Admin/IndexPage.php
+msgid "Filtering reads from a dedicated index rather than from post meta and term relationships. The first build has to run once; after that the index keeps itself up to date whenever a product changes."
+msgstr "Die Filterung liest aus einem eigenen Index statt aus Post-Meta und Term-Beziehungen. Der erste Aufbau muss einmal laufen; danach hält sich der Index bei jeder Produktänderung selbst aktuell."
+
+#: includes/Admin/FilterSetEditor.php
+#: includes/Compat/ElementorWidget.php
+msgid "Filters"
+msgstr "Filter"
+
+#: includes/Support/Colors.php
+msgid "Focus ring"
+msgstr "Fokus-Ring"
+
+#: includes/Admin/SettingsPage.php
+msgid "Font size"
+msgstr "Schriftgröße"
+
+#: includes/Frontend/Renderer.php
+msgid "From"
+msgstr "Von"
+
+#: includes/Admin/SettingsPage.php
+msgid "Gap between options"
+msgstr "Abstand zwischen Optionen"
+
+#: includes/Admin/SettingsPage.php
+msgid "Grid selectors"
+msgstr "Raster-Selektoren"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Heading"
+msgstr "Überschrift"
+
+#: includes/Admin/SettingsPage.php
+msgid "Hide"
+msgstr "Ausblenden"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Hide empty options"
+msgstr "Leere Optionen ausblenden"
+
+#: includes/Admin/SettingsPage.php
+msgid "Hide options with no matching products"
+msgstr "Optionen ohne passende Produkte ausblenden"
+
+#: includes/Compat/ElementorWidget.php
+msgid "Horizontal"
+msgstr "Horizontal"
+
+#: includes/Admin/FilterSetEditor.php
+#: includes/Admin/SettingsPage.php
+msgid "Horizontal toolbar"
+msgstr "Horizontale Leiste"
+
+#: includes/Admin/FilterSetEditor.php
+#: includes/Admin/SettingsPage.php
+msgid "Image swatches"
+msgstr "Bildfelder"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "In stock"
+msgstr "Auf Lager"
+
+#: includes/Filters/FilterDefinition.php
+msgid "In stock only"
+msgstr "Nur auf Lager"
+
+#: includes/Admin/Admin.php
+msgid "Index"
+msgstr "Index"
+
+#: includes/Admin/SettingsPage.php
+msgid "Index batch size"
+msgstr "Index-Batchgröße"
+
+#: includes/Admin/Admin.php
+msgid "Index build cancelled."
+msgstr "Index-Aufbau abgebrochen."
+
+#: includes/Admin/Admin.php
+#: includes/Index/Indexer.php
+msgid "Index complete."
+msgstr "Index vollständig."
+
+#: includes/Admin/IndexPage.php
+msgid "Index rows"
+msgstr "Index-Zeilen"
+
+#: includes/Admin/IndexPage.php
+msgid "Indexed products"
+msgstr "Indexierte Produkte"
+
+#: includes/Admin/SettingsPage.php
+msgid "Indexing"
+msgstr "Indexierung"
+
+#: includes/Frontend/Ajax.php
+msgid "Invalid URL."
+msgstr "Ungültige URL."
+
+#: includes/Admin/SettingsPage.php
+msgid "Keep the dropdown"
+msgstr "Dropdown beibehalten"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Keyword search"
+msgstr "Stichwortsuche"
+
+#: includes/Support/Colors.php
+msgid "Label background"
+msgstr "Label-Hintergrund"
+
+#: includes/Support/Colors.php
+msgid "Label background (hover)"
+msgstr "Label-Hintergrund (Hover)"
+
+#: includes/Support/Colors.php
+msgid "Label background (selected)"
+msgstr "Label-Hintergrund (ausgewählt)"
+
+#: includes/Support/Colors.php
+msgid "Label background (unavailable)"
+msgstr "Label-Hintergrund (nicht verfügbar)"
+
+#: includes/Support/Colors.php
+msgid "Label border"
+msgstr "Label-Rahmen"
+
+#: includes/Support/Colors.php
+msgid "Label border (hover)"
+msgstr "Label-Rahmen (Hover)"
+
+#: includes/Support/Colors.php
+msgid "Label border (selected)"
+msgstr "Label-Rahmen (ausgewählt)"
+
+#: includes/Support/Colors.php
+msgid "Label text"
+msgstr "Label-Text"
+
+#: includes/Support/Colors.php
+msgid "Label text (selected)"
+msgstr "Label-Text (ausgewählt)"
+
+#: includes/Support/Colors.php
+msgid "Label text (unavailable)"
+msgstr "Label-Text (nicht verfügbar)"
+
+#: includes/Admin/FilterSetEditor.php
+#: includes/Admin/SettingsPage.php
+msgid "Labels"
+msgstr "Labels"
+
+#: includes/Support/Colors.php
+msgid "Labels and chips"
+msgstr "Labels und Chips"
+
+#: includes/Admin/FilterSetEditor.php
+#: includes/Compat/ElementorWidget.php
+msgid "Layout"
+msgstr "Layout"
+
+#: includes/Admin/SettingsPage.php
+msgid "Leave empty to use the best hook for the active theme."
+msgstr "Leer lassen, um den passenden Hook des aktiven Themes zu verwenden."
+
+#: includes/Frontend/Assets.php
+msgid "Loading…"
+msgstr "Wird geladen…"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Logic"
+msgstr "Logik"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Match per variation"
+msgstr "Pro Variante abgleichen"
+
+#: includes/Frontend/Renderer.php
+msgid "Maximum"
+msgstr "Maximum"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Meta key"
+msgstr "Meta-Key"
+
+#: includes/Frontend/Renderer.php
+msgid "Minimum"
+msgstr "Minimum"
+
+#: includes/Compat/ElementorWidget.php
+msgid "Mode"
+msgstr "Modus"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Multi select"
+msgstr "Mehrfachauswahl"
+
+#: includes/Support/Colors.php
+msgid "Muted text"
+msgstr "Gedämpfter Text"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Name"
+msgstr "Name"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Nested list"
+msgstr "Verschachtelte Liste"
+
+#: includes/Frontend/Renderer.php
+msgid "Newest"
+msgstr "Neueste"
+
+#: includes/Frontend/Ajax.php
+#: includes/Frontend/Assets.php
+#: includes/Frontend/Shortcodes.php
+msgid "No products were found matching your selection."
+msgstr "Es wurden keine Produkte gefunden, die zu deiner Auswahl passen."
+
+#: includes/Admin/FilterSetEditor.php
+msgid "OR — any selected value"
+msgstr "ODER — mindestens ein gewählter Wert"
+
+#: includes/Admin/FilterSetEditor.php
+#: includes/Filters/FilterDefinition.php
+msgid "On sale"
+msgstr "Im Angebot"
+
+#: includes/Admin/IndexPage.php
+msgid "On very large catalogues run %s from the command line instead; it is faster and not bound by browser timeouts."
+msgstr "Bei sehr großen Katalogen stattdessen %s auf der Kommandozeile ausführen; das ist schneller und nicht an Browser-Timeouts gebunden."
+
+#: includes/Admin/SettingsPage.php
+msgid "Only needed when a page builder renders the grid with its own markup."
+msgstr "Nur nötig, wenn ein Page-Builder das Raster mit eigenem Markup ausgibt."
+
+#: includes/Admin/SettingsPage.php
+msgid "Options"
+msgstr "Optionen"
+
+#: includes/Admin/SettingsPage.php
+msgid "Pagination"
+msgstr "Seitennummerierung"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Panel"
+msgstr "Panel"
+
+#: includes/Support/Colors.php
+msgid "Panel background"
+msgstr "Panel-Hintergrund"
+
+#: includes/Admin/SettingsPage.php
+msgid "Parameter prefix"
+msgstr "Parameter-Präfix"
+
+#: includes/Admin/SettingsPage.php
+msgid "Performance"
+msgstr "Performance"
+
+#: includes/Admin/SettingsPage.php
+msgid "Point the canonical URL at the unfiltered archive"
+msgstr "Canonical-URL auf das ungefilterte Archiv setzen"
+
+#: includes/Frontend/Renderer.php
+msgid "Popularity"
+msgstr "Beliebtheit"
+
+#: includes/Admin/FilterSetEditor.php
+#: includes/Filters/FilterDefinition.php
+msgid "Price"
+msgstr "Preis"
+
+#: includes/Frontend/Renderer.php
+msgid "Price: high to low"
+msgstr "Preis: absteigend"
+
+#: includes/Frontend/Renderer.php
+msgid "Price: low to high"
+msgstr "Preis: aufsteigend"
+
+#: includes/Admin/SettingsPage.php
+msgid "Print a filter bar above the product grid automatically"
+msgstr "Filterleiste automatisch über dem Produktraster ausgeben"
+
+#: includes/Admin/Admin.php
+msgid "Product Filters"
+msgstr "Produktfilter"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Product attribute"
+msgstr "Produkt-Attribut"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Product count"
+msgstr "Anzahl Produkte"
+
+#: includes/Compat/Builders.php
+#: includes/Compat/ElementorWidget.php
+#: includes/Filters/Registry.php
+msgid "Product filters"
+msgstr "Produktfilter"
+
+#: includes/Admin/IndexPage.php
+msgid "Product index"
+msgstr "Produktindex"
+
+#: includes/Admin/SettingsPage.php
+msgid "Products container"
+msgstr "Produkt-Container"
+
+#: includes/Admin/IndexPage.php
+msgid "Products in catalogue"
+msgstr "Produkte im Katalog"
+
+#: includes/Admin/SettingsPage.php
+msgid "Products processed per request while the index is building. Lower it on constrained hosting."
+msgstr "Produkte pro Anfrage während des Index-Aufbaus. Bei knappem Hosting niedriger setzen."
+
+#: includes/Admin/SettingsPage.php
+msgid "Query string — /shop/?f_color=blue"
+msgstr "Query-String — /shop/?f_color=blue"
+
+#: includes/Admin/SettingsPage.php
+msgid "Queue index updates instead of writing them during the request"
+msgstr "Index-Updates einreihen statt sie während der Anfrage zu schreiben"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Radio buttons"
+msgstr "Radio-Buttons"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Range slider"
+msgstr "Bereichsregler"
+
+#: includes/Admin/FilterSetEditor.php
+#: includes/Filters/FilterDefinition.php
+msgid "Rating"
+msgstr "Bewertung"
+
+#: includes/Admin/FilterSetEditor.php
+#: includes/Support/Colors.php
+msgid "Rating stars"
+msgstr "Bewertungssterne"
+
+#: includes/Admin/SettingsPage.php
+msgid "Readable path — /shop/color-blue/"
+msgstr "Lesbarer Pfad — /shop/color-blue/"
+
+#: includes/Admin/IndexPage.php
+msgid "Rebuild the index"
+msgstr "Index neu aufbauen"
+
+#: includes/Admin/FilterSetEditor.php
+#: includes/Admin/TermMeta.php
+msgid "Remove"
+msgstr "Entfernen"
+
+#: includes/Frontend/Renderer.php
+msgid "Remove filter"
+msgstr "Filter entfernen"
+
+#: includes/Admin/SettingsPage.php
+msgid "Replace the variation dropdowns on the product page"
+msgstr "Varianten-Dropdowns auf der Produktseite ersetzen"
+
+#: includes/Admin/SettingsPage.php
+msgid "Require one variation to match every selected attribute"
+msgstr "Eine einzelne Variante muss alle gewählten Attribute erfüllen"
+
+#: includes/Admin/SettingsPage.php
+msgid "Result count"
+msgstr "Trefferzahl"
+
+#: includes/Admin/SettingsPage.php
+msgid "Result sets up to this size are passed to WP_Query as ids; larger sets join the index table instead."
+msgstr "Ergebnismengen bis zu dieser Größe gehen als IDs an WP_Query; größere Mengen joinen stattdessen die Index-Tabelle."
+
+#: includes/Admin/SettingsPage.php
+msgid "Rounded"
+msgstr "Abgerundet"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Save set"
+msgstr "Satz speichern"
+
+#: includes/Admin/SettingsPage.php
+msgid "Scroll to the results after filtering"
+msgstr "Nach dem Filtern zu den Ergebnissen scrollen"
+
+#: includes/Filters/FilterDefinition.php
+#: includes/Frontend/Renderer.php
+msgid "Search"
+msgstr "Suche"
+
+#: includes/Admin/SettingsPage.php
+msgid "Search engines"
+msgstr "Suchmaschinen"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Search inside options"
+msgstr "Suche innerhalb der Optionen"
+
+#: includes/Frontend/Renderer.php
+msgid "Search products…"
+msgstr "Produkte suchen…"
+
+#: includes/Frontend/Renderer.php
+msgid "Search…"
+msgstr "Suchen…"
+
+#: includes/Admin/TermMeta.php
+msgid "Second colour"
+msgstr "Zweite Farbe"
+
+#: includes/Admin/TermMeta.php
+msgid "Second colour (optional)"
+msgstr "Zweite Farbe (optional)"
+
+#: includes/Support/Colors.php
+msgid "Secondary background"
+msgstr "Zweiter Hintergrund"
+
+#: includes/Admin/FilterSetEditor.php
+#: includes/Compat/ElementorWidget.php
+msgid "Select and apply"
+msgstr "Auswählen und anwenden"
+
+#: includes/Admin/SettingsPage.php
+msgid "Select and apply — collect choices, then submit"
+msgstr "Auswählen und anwenden — erst sammeln, dann übernehmen"
+
+#: includes/Admin/Admin.php
+#: includes/Admin/TermMeta.php
+msgid "Select image"
+msgstr "Bild auswählen"
+
+#: includes/Admin/TermMeta.php
+msgid "Set a second colour for two tone swatches such as \"black and white\"."
+msgstr "Zweite Farbe für zweifarbige Swatches wie „schwarz-weiß“ setzen."
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Sets"
+msgstr "Sätze"
+
+#: includes/Admin/Admin.php
+msgid "Settings"
+msgstr "Einstellungen"
+
+#: includes/Admin/Admin.php
+msgid "Settings saved."
+msgstr "Einstellungen gespeichert."
+
+#: includes/Admin/SettingsPage.php
+msgid "Shape"
+msgstr "Form"
+
+#: includes/Admin/SettingsPage.php
+msgid "Shape and spacing"
+msgstr "Form und Abstände"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Show a clear all button"
+msgstr "Button „Alles zurücksetzen“ anzeigen"
+
+#: includes/Compat/FilterWidget.php
+msgid "Show a filter set in a sidebar."
+msgstr "Einen Filtersatz in einer Sidebar anzeigen."
+
+#: includes/Admin/SettingsPage.php
+msgid "Show above product archives"
+msgstr "Über Produktarchiven anzeigen"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Show active filter chips"
+msgstr "Aktive Filter als Chips anzeigen"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Show as tree"
+msgstr "Als Baum anzeigen"
+
+#: includes/Admin/SettingsPage.php
+msgid "Show available variations on product cards"
+msgstr "Verfügbare Varianten auf Produktkacheln zeigen"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Show first N options"
+msgstr "Nur die ersten N Optionen zeigen"
+
+#: includes/Frontend/Assets.php
+#: includes/Frontend/Renderer.php
+msgid "Show less"
+msgstr "Weniger anzeigen"
+
+#: includes/Frontend/Assets.php
+#: includes/Frontend/Renderer.php
+msgid "Show more"
+msgstr "Mehr anzeigen"
+
+#: includes/Admin/SettingsPage.php
+msgid "Show product counters"
+msgstr "Produktzähler anzeigen"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Show the result counter"
+msgstr "Trefferzähler anzeigen"
+
+#: includes/Admin/SettingsPage.php
+msgid "Size"
+msgstr "Größe"
+
+#: includes/Support/Colors.php
+msgid "Slider handle"
+msgstr "Slider-Griff"
+
+#: includes/Support/Colors.php
+msgid "Slider range"
+msgstr "Slider-Bereich"
+
+#: includes/Support/Colors.php
+msgid "Slider track"
+msgstr "Slider-Schiene"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Slug"
+msgstr "Slug"
+
+#: includes/Frontend/Assets.php
+msgid "Something went wrong. Please try again."
+msgstr "Da ist etwas schiefgelaufen. Bitte versuche es erneut."
+
+#: includes/Filters/FilterDefinition.php
+msgid "Sort by"
+msgstr "Sortieren nach"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Sort options by"
+msgstr "Optionen sortieren nach"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Sorting"
+msgstr "Sortierung"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Source"
+msgstr "Quelle"
+
+#: includes/Admin/SettingsPage.php
+msgid "Square"
+msgstr "Quadrat"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Start collapsed"
+msgstr "Eingeklappt starten"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Start every filter collapsed"
+msgstr "Alle Filter eingeklappt starten"
+
+#: includes/Admin/IndexPage.php
+msgid "Status"
+msgstr "Status"
+
+#: includes/Admin/FilterSetEditor.php
+#: includes/Compat/ElementorWidget.php
+msgid "Step by step"
+msgstr "Schritt für Schritt"
+
+#: includes/Admin/SettingsPage.php
+msgid "Step by step — apply immediately and hide impossible options"
+msgstr "Schritt für Schritt — sofort anwenden und unmögliche Optionen ausblenden"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Stick the panel while scrolling"
+msgstr "Panel beim Scrollen mitführen"
+
+#: includes/Support/Colors.php
+msgid "Strong border"
+msgstr "Kräftiger Rahmen"
+
+#: includes/Admin/TermMeta.php
+msgid "Swatch"
+msgstr "Swatch"
+
+#: includes/Support/Colors.php
+msgid "Swatch border"
+msgstr "Swatch-Rahmen"
+
+#: includes/Admin/TermMeta.php
+msgid "Swatch colour"
+msgstr "Swatch-Farbe"
+
+#: includes/Admin/TermMeta.php
+msgid "Swatch image"
+msgstr "Swatch-Bild"
+
+#: includes/Support/Colors.php
+msgid "Swatch selection ring"
+msgstr "Swatch-Auswahlring"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Switch"
+msgstr "Schalter"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Taxonomy"
+msgstr "Taxonomie"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Taxonomy (category, tag, brand…)"
+msgstr "Taxonomie (Kategorie, Schlagwort, Marke…)"
+
+#: includes/Support/Colors.php
+msgid "Text"
+msgstr "Text"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Text input"
+msgstr "Texteingabe"
+
+#: includes/Support/Colors.php
+msgid "Text on accent"
+msgstr "Text auf Akzent"
+
+#: includes/Admin/Admin.php
+msgid "The index build failed. Check the error log and try again."
+msgstr "Der Index-Aufbau ist fehlgeschlagen. Prüfe das Fehlerprotokoll und versuche es erneut."
+
+#: includes/Admin/IndexPage.php
+msgid "The index tables are missing. Deactivate and reactivate the plugin to create them."
+msgstr "Die Index-Tabellen fehlen. Deaktiviere das Plugin und aktiviere es erneut, um sie anzulegen."
+
+#: includes/Admin/Admin.php
+msgid "The product index has not been built yet. Filters stay empty until the first build finishes."
+msgstr "Der Produktindex wurde noch nicht aufgebaut. Die Filter bleiben leer, bis der erste Durchlauf fertig ist."
+
+#: includes/Admin/FilterSetEditor.php
+msgid "Title"
+msgstr "Titel"
+
+#: includes/Frontend/Renderer.php
+msgid "To"
+msgstr "Bis"
+
+#: includes/Frontend/Ajax.php
+msgid "Too many requests."
+msgstr "Zu viele Anfragen."
+
+#: includes/Admin/TermMeta.php
+msgid "Tooltip"
+msgstr "Tooltip"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "URL name"
+msgstr "URL-Name"
+
+#: includes/Admin/SettingsPage.php
+msgid "URL style"
+msgstr "URL-Stil"
+
+#: includes/Admin/SettingsPage.php
+msgid "URLs and SEO"
+msgstr "URLs und SEO"
+
+#: includes/Frontend/Assets.php
+msgid "Unavailable"
+msgstr "Nicht verfügbar"
+
+#: includes/Admin/SettingsPage.php
+msgid "Unavailable variations"
+msgstr "Nicht verfügbare Varianten"
+
+#: includes/Admin/SettingsPage.php
+msgid "Update results without reloading the page"
+msgstr "Ergebnisse ohne Neuladen der Seite aktualisieren"
+
+#: includes/Admin/Admin.php
+msgid "Use image"
+msgstr "Bild verwenden"
+
+#: includes/Admin/SettingsPage.php
+msgid "Variation swatches"
+msgstr "Varianten-Swatches"
+
+#: includes/Compat/ElementorWidget.php
+msgid "Vertical"
+msgstr "Vertikal"
+
+#: includes/Admin/FilterSetEditor.php
+#: includes/Admin/SettingsPage.php
+msgid "Vertical panel"
+msgstr "Vertikale Spalte"
+
+#: includes/Admin/IndexPage.php
+msgid "Waiting in the update queue"
+msgstr "Wartend in der Update-Warteschlange"
+
+#: includes/Admin/SettingsPage.php
+msgid "Where"
+msgstr "Wo"
+
+#: includes/Admin/Admin.php
+msgid "You are not allowed to do this."
+msgstr "Dazu hast du keine Berechtigung."
+
+#: includes/Admin/SettingsPage.php
+msgid "post__in threshold"
+msgstr "post__in-Schwelle"
+
+#: includes/Admin/SettingsPage.php
+msgid "seconds"
+msgstr "Sekunden"
+
+#: includes/Admin/FilterSetEditor.php
+msgid "— select —"
+msgstr "— auswählen —"
+
+msgid "%s product"
+msgid_plural "%s products"
+msgstr[0] "%s Produkt"
+msgstr[1] "%s Produkte"

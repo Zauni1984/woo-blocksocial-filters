@@ -25,6 +25,11 @@
 	color: inherit;
 }
 
+/* A collapsed body carries the hidden attribute; no layout rule may re-show it. */
+.bsf [hidden] {
+	display: none !important;
+}
+
 /* ---------------------------------------------------------------------------
  * Panel
  * ------------------------------------------------------------------------ */
@@ -972,6 +977,7 @@
 		overscroll-behavior: contain;
 	}
 
+	.bsf--horizontal .bsf-filter:not(.is-open) > .bsf-filter__body,
 	.bsf--horizontal .bsf-filter__body {
 		border: 0;
 		box-shadow: none;
@@ -980,6 +986,12 @@
 		max-height: none;
 		padding: 0 0 14px;
 		position: static;
+	}
+
+	/* Each filter is a row with a chevron, so a long attribute list stays
+	   readable instead of turning the archive into an endless page. */
+	.bsf--horizontal .bsf-filter + .bsf-filter {
+		border-top: var(--bsf-line);
 	}
 
 	.bsf--horizontal .bsf-filter__title {

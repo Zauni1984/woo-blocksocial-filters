@@ -248,7 +248,7 @@ class FilterDefinition {
 			case 'rating':
 				return __( 'Rating', 'woo-blocksocial-filters' );
 			case 'stock':
-				return __( 'Availability', 'woo-blocksocial-filters' );
+				return __( 'In stock only', 'woo-blocksocial-filters' );
 			case 'sale':
 				return __( 'On sale', 'woo-blocksocial-filters' );
 			case 'featured':

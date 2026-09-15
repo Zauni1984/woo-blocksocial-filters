@@ -25,7 +25,7 @@ class IndexPage {
 		$total     = $indexer->count_products();
 		$processed = (int) $state['processed'];
 		$percent   = $total > 0 ? min( 100, (int) round( ( $processed / max( 1, (int) $state['total'] ?: $total ) ) * 100 ) ) : 0;
-		$rows      = $this->row_counts();
+		$rows      = $indexer->stats();
 		?>
 		<div class="bsf-index">
 			<h2><?php esc_html_e( 'Product index', 'woo-blocksocial-filters' ); ?></h2>
@@ -42,19 +42,19 @@ class IndexPage {
 				<tbody>
 					<tr>
 						<th><?php esc_html_e( 'Products in catalogue', 'woo-blocksocial-filters' ); ?></th>
-						<td><?php echo esc_html( number_format_i18n( $total ) ); ?></td>
+						<td data-bsf-stat="indexable"><?php echo esc_html( number_format_i18n( $total ) ); ?></td>
 					</tr>
 					<tr>
 						<th><?php esc_html_e( 'Indexed products', 'woo-blocksocial-filters' ); ?></th>
-						<td><?php echo esc_html( number_format_i18n( $rows['products'] ) ); ?></td>
+						<td data-bsf-stat="products"><?php echo esc_html( number_format_i18n( $rows['products'] ) ); ?></td>
 					</tr>
 					<tr>
 						<th><?php esc_html_e( 'Index rows', 'woo-blocksocial-filters' ); ?></th>
-						<td><?php echo esc_html( number_format_i18n( $rows['index'] ) ); ?></td>
+						<td data-bsf-stat="rows"><?php echo esc_html( number_format_i18n( $rows['rows'] ) ); ?></td>
 					</tr>
 					<tr>
 						<th><?php esc_html_e( 'Waiting in the update queue', 'woo-blocksocial-filters' ); ?></th>
-						<td><?php echo esc_html( number_format_i18n( $rows['queue'] ) ); ?></td>
+						<td data-bsf-stat="queue"><?php echo esc_html( number_format_i18n( $rows['queue'] ) ); ?></td>
 					</tr>
 					<tr>
 						<th><?php esc_html_e( 'Status', 'woo-blocksocial-filters' ); ?></th>
@@ -88,32 +88,5 @@ class IndexPage {
 			</p>
 		</div>
 		<?php
-	}
-
-	/**
-	 * Row counts from the index tables.
-	 *
-	 * @return array{products:int,index:int,queue:int}
-	 */
-	private function row_counts(): array {
-		global $wpdb;
-
-		if ( ! Schema::installed() ) {
-			return array(
-				'products' => 0,
-				'index'    => 0,
-				'queue'    => 0,
-			);
-		}
-
-		$product = Schema::table_product();
-		$index   = Schema::table_index();
-		$queue   = Schema::table_queue();
-
-		return array(
-			'products' => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$product}" ), // phpcs:ignore WordPress.DB
-			'index'    => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$index}" ), // phpcs:ignore WordPress.DB
-			'queue'    => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$queue}" ), // phpcs:ignore WordPress.DB
-		);
 	}
 }

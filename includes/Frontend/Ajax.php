@@ -438,11 +438,8 @@ class Ajax {
 	 */
 	public function handle_index_status(): WP_REST_Response {
 		$indexer = bsf()->indexer();
-		$state   = $indexer->state();
 
-		$state['indexable'] = $indexer->count_products();
-
-		return new WP_REST_Response( $state, 200 );
+		return new WP_REST_Response( array_merge( $indexer->state(), $indexer->stats() ), 200 );
 	}
 
 	/**
@@ -465,6 +462,12 @@ class Ajax {
 
 			default:
 				$state = $indexer->run_batch( bsf()->settings()->int( 'index_batch', 10, 2000 ) );
+		}
+
+		// Stats ride along so the admin screen never shows a stale table once
+		// the build has finished.
+		if ( 'running' !== ( $state['status'] ?? '' ) ) {
+			$state = array_merge( $state, $indexer->stats() );
 		}
 
 		return new WP_REST_Response( $state, 200 );

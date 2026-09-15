@@ -160,6 +160,36 @@ class Indexer {
 	}
 
 	/**
+	 * Row counts for the admin screen and the status endpoint.
+	 *
+	 * @return array<string,int>
+	 */
+	public function stats(): array {
+		global $wpdb;
+
+		$stats = array(
+			'indexable' => $this->count_products(),
+			'products'  => 0,
+			'rows'      => 0,
+			'queue'     => 0,
+		);
+
+		if ( ! Schema::installed() ) {
+			return $stats;
+		}
+
+		$product = Schema::table_product();
+		$index   = Schema::table_index();
+		$queue   = Schema::table_queue();
+
+		$stats['products'] = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$product}" ); // phpcs:ignore WordPress.DB
+		$stats['rows']     = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$index}" ); // phpcs:ignore WordPress.DB
+		$stats['queue']    = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$queue}" ); // phpcs:ignore WordPress.DB
+
+		return $stats;
+	}
+
+	/**
 	 * Total number of indexable products.
 	 */
 	public function count_products(): int {

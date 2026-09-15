@@ -194,7 +194,7 @@ wp bsf flush                            # flush cached counts
 ## Development
 
 ```
-php tests/run.php     # 81 assertions, no dependencies, no WordPress needed
+php tests/run.php     # 86 assertions, no dependencies, no WordPress needed
 composer lint         # php -l across the tree
 composer phpcs        # WordPress coding standards
 ```
@@ -202,6 +202,12 @@ composer phpcs        # WordPress coding standards
 `tests/bootstrap.php` stubs the small slice of WordPress the core classes touch,
 so the sanitiser, URL builder, SQL builder and renderer can be exercised
 directly.
+
+## Translations
+
+German (`de_DE`) ships with the plugin in `languages/`. Translations load through
+`load_plugin_textdomain`, so a `.mo` dropped into `wp-content/languages/plugins/`
+overrides the bundled one.
 
 ## License
 

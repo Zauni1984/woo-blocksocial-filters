@@ -164,6 +164,18 @@
 		var $status = $( '[data-bsf-index-status]' );
 		var cancelled = false;
 
+		// Refresh the statistics table in place: the build writes rows while the
+		// page sits there, so leaving the old numbers on screen reads as a failure.
+		function paintStats( state ) {
+			[ 'indexable', 'products', 'rows', 'queue' ].forEach( function ( key ) {
+				var cell = document.querySelector( '[data-bsf-stat="' + key + '"]' );
+
+				if ( cell && typeof state[ key ] !== 'undefined' ) {
+					cell.textContent = Number( state[ key ] ).toLocaleString();
+				}
+			} );
+		}
+
 		function paint( state ) {
 			var total = Math.max( 1, parseInt( state.total, 10 ) || 1 );
 			var done = parseInt( state.processed, 10 ) || 0;
@@ -188,6 +200,7 @@
 						return;
 					}
 
+					paintStats( state );
 					finish( state.status === 'done' ? ( i18n.done || 'Index complete.' ) : ( i18n.cancelled || 'Cancelled.' ) );
 				} )
 				.catch( function () {
@@ -199,6 +212,9 @@
 			$start.prop( 'disabled', false );
 			$cancel.prop( 'hidden', true );
 			$text.text( message );
+
+			// Read the counts back from the server as the final word.
+			request( '/index/status' ).then( paintStats ).catch( function () {} );
 		}
 
 		$start.on( 'click', function ( event ) {

@@ -23,6 +23,9 @@ class Renderer {
 	/** @var string Mode of the set currently being rendered. */
 	private $mode = 'auto';
 
+	/** @var bool Whether the set currently being rendered starts collapsed. */
+	private $collapse_all = false;
+
 	/**
 	 * Render a whole filter set.
 	 *
@@ -47,10 +50,12 @@ class Renderer {
 				'columns' => $set['columns'],
 				'title'   => $set['title'],
 				'class'   => '',
+				'collapse_all' => ! empty( $set['collapse_all'] ),
 			)
 		);
 
-		$this->mode = (string) $args['mode'];
+		$this->mode         = (string) $args['mode'];
+		$this->collapse_all = ! empty( $args['collapse_all'] );
 
 		$constraints = $state->constraints( $definitions, '', $this->context_constraints() );
 		$total       = bsf()->query()->count( $constraints, $this->query_args() );
@@ -282,7 +287,12 @@ class Renderer {
 		}
 
 		$collapsible = (bool) $definition->get( 'collapsible', true );
-		$collapsed   = (bool) $definition->get( 'collapsed', false ) && ! bsf()->state()->selection( $definition );
+
+		// A panel full of expanded attribute lists is unusable in a sidebar, so
+		// sets can start every filter closed. Anything already filtered on stays
+		// open, otherwise the shopper cannot see what is active.
+		$start_closed = (bool) $definition->get( 'collapsed', false ) || $this->collapse_all;
+		$collapsed    = $collapsible && $start_closed && ! bsf()->state()->selection( $definition );
 
 		$classes = array(
 			'bsf-filter',

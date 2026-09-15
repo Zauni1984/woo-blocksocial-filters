@@ -4,7 +4,7 @@ Tags: woocommerce, product filter, attribute filter, variation swatches, ajax fi
 Requires at least: 6.2
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -117,6 +117,17 @@ filtered URL directly.
 5. The first index build, with progress.
 
 == Changelog ==
+
+= 1.0.1 =
+* German translation (de_DE) for the whole plugin, front end and admin.
+* Fixed: filters could not be collapsed on mobile, so an archive filter bar grew
+  endlessly long. A layout rule was overriding the hidden attribute.
+* Filter sets now start with every filter collapsed, which keeps sidebar widgets
+  and mobile drawers short. Filters with an active selection stay open, and the
+  behaviour is a checkbox per set.
+* On small screens filters collapse automatically on first paint.
+* The index screen now refreshes its statistics when a build finishes instead of
+  leaving the previous numbers on screen.
 
 = 1.0.0 =
 * First release.

@@ -101,10 +101,9 @@ class Commands {
 	 * Show index statistics.
 	 */
 	public function status(): void {
-		global $wpdb;
-
 		$indexer = bsf()->indexer();
 		$state   = $indexer->state();
+		$stats   = $indexer->stats();
 
 		$rows = array(
 			array(
@@ -113,28 +112,25 @@ class Commands {
 			),
 			array(
 				'metric' => 'catalogue products',
-				'value'  => (string) $indexer->count_products(),
+				'value'  => (string) $stats['indexable'],
+			),
+			array(
+				'metric' => 'indexed products',
+				'value'  => (string) $stats['products'],
+			),
+			array(
+				'metric' => 'index rows',
+				'value'  => (string) $stats['rows'],
+			),
+			array(
+				'metric' => 'queued',
+				'value'  => (string) $stats['queue'],
+			),
+			array(
+				'metric' => 'tables installed',
+				'value'  => Schema::installed() ? 'yes' : 'no',
 			),
 		);
-
-		if ( Schema::installed() ) {
-			$product = Schema::table_product();
-			$index   = Schema::table_index();
-			$queue   = Schema::table_queue();
-
-			$rows[] = array(
-				'metric' => 'indexed products',
-				'value'  => (string) (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$product}" ), // phpcs:ignore WordPress.DB
-			);
-			$rows[] = array(
-				'metric' => 'index rows',
-				'value'  => (string) (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$index}" ), // phpcs:ignore WordPress.DB
-			);
-			$rows[] = array(
-				'metric' => 'queued',
-				'value'  => (string) (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$queue}" ), // phpcs:ignore WordPress.DB
-			);
-		}
 
 		\WP_CLI\Utils\format_items( 'table', $rows, array( 'metric', 'value' ) );
 	}

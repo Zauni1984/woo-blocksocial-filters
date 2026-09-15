@@ -270,7 +270,38 @@
 
 		this.bind();
 		this.markSelections();
+		this.collapseOnMobile();
 	}
+
+	/**
+	 * Start collapsed on small screens so an archive bar with many attributes
+	 * is a short list of headings rather than an endless page. Filters that
+	 * already carry a selection stay open so the shopper can see it.
+	 */
+	Panel.prototype.collapseOnMobile = function () {
+		if ( window.innerWidth > 782 ) {
+			return;
+		}
+
+		var state = this.state;
+
+		qsa( '.bsf-filter.is-collapsible', this.root ).forEach( function ( filter ) {
+			var selected = !! state[ filter.dataset.bsfKey ];
+			var body = filter.querySelector( '.bsf-filter__body' );
+			var title = filter.querySelector( '.bsf-filter__title' );
+
+			filter.classList.toggle( 'is-collapsed', ! selected );
+			filter.classList.remove( 'is-open' );
+
+			if ( body ) {
+				body.hidden = ! selected;
+			}
+
+			if ( title ) {
+				title.setAttribute( 'aria-expanded', selected ? 'true' : 'false' );
+			}
+		} );
+	};
 
 	Panel.prototype.bind = function () {
 		var self = this;

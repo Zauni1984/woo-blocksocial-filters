@@ -82,6 +82,7 @@ class FilterSetEditor {
 						<tr>
 							<th scope="row"><?php esc_html_e( 'Panel', 'woo-blocksocial-filters' ); ?></th>
 							<td>
+								<label><input type="checkbox" name="collapse_all" value="1" <?php checked( $set['collapse_all'] ); ?> /> <?php esc_html_e( 'Start every filter collapsed', 'woo-blocksocial-filters' ); ?></label><br />
 								<label><input type="checkbox" name="show_chips" value="1" <?php checked( $set['show_chips'] ); ?> /> <?php esc_html_e( 'Show active filter chips', 'woo-blocksocial-filters' ); ?></label><br />
 								<label><input type="checkbox" name="show_reset" value="1" <?php checked( $set['show_reset'] ); ?> /> <?php esc_html_e( 'Show a clear all button', 'woo-blocksocial-filters' ); ?></label><br />
 								<label><input type="checkbox" name="show_count" value="1" <?php checked( $set['show_count'] ); ?> /> <?php esc_html_e( 'Show the result counter', 'woo-blocksocial-filters' ); ?></label><br />
@@ -335,6 +336,7 @@ class FilterSetEditor {
 				'layout'        => $post['layout'] ?? 'vertical',
 				'mode'          => $post['mode'] ?? 'auto',
 				'columns'       => $post['columns'] ?? 1,
+				'collapse_all'  => ! empty( $post['collapse_all'] ),
 				'show_chips'    => ! empty( $post['show_chips'] ),
 				'show_reset'    => ! empty( $post['show_reset'] ),
 				'show_count'    => ! empty( $post['show_count'] ),
