@@ -1,0 +1,29 @@
+{
+	"name": "blocksocial/woo-blocksocial-filters",
+	"description": "High performance, index driven product filters for WooCommerce.",
+	"type": "wordpress-plugin",
+	"license": "GPL-2.0-or-later",
+	"require": {
+		"php": ">=7.4"
+	},
+	"require-dev": {
+		"squizlabs/php_codesniffer": "^3.9",
+		"wp-coding-standards/wpcs": "^3.1",
+		"phpcompatibility/phpcompatibility-wp": "^2.1"
+	},
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
+	},
+	"scripts": {
+		"test": "php tests/run.php && node tests/js/bridge.test.js",
+		"lint": "find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l",
+		"phpcs": "phpcs --standard=WordPress --extensions=php --ignore=vendor,node_modules ."
+	},
+	"autoload": {
+		"psr-4": {
+			"BlockSocial\\Filters\\": "includes/"
+		}
+	}
+}
