@@ -191,6 +191,35 @@ wp bsf flush                            # flush cached counts
   known placement hooks; anything else falls back to
   `woocommerce_before_shop_loop` or a hook you choose
 
+## Page caches
+
+Filtered pages are fine to cache. Three things must be left alone, or the panel
+goes stale or stops working:
+
+| Setting (LiteSpeed Cache) | Value |
+| --- | --- |
+| Cache → Excludes → **Do Not Cache URIs** | `/wp-json/blocksocial-filters/` |
+| Page Optimization → Tuning → **JS Deferred/Delayed Excludes** | `woo-blocksocial-filters/assets/js/frontend.js` |
+| Page Optimization → Tuning-CSS → **CSS Excludes** | `woo-blocksocial-filters/assets/css/frontend.css` |
+
+The REST route returns the freshly filtered grid *and* the facet counts, so a
+cached response keeps serving counts from before the last index build — which
+looks like options going missing, because an option counted at zero is hidden.
+LiteSpeed caches the REST API by default and WP Rocket does not, which is why
+the same build can behave differently on two shops.
+
+`frontend.js` patches `window.fetch` and `XMLHttpRequest.prototype.open` while
+it loads so a theme's own endless loading carries the active filters. Deferring
+or delaying it means the theme has already asked for its first unfiltered page.
+
+Also make sure the filter parameters (`f_*`, `ordr`, `srch`) are **not** listed
+under *Drop Query String*, and leave *Cache Logged-in Users* off — the page
+carries a `wp_rest` nonce that expires after 12 hours.
+
+[docs/CACHING.md](docs/CACHING.md) has the complete list, the equivalents for
+WP Rocket, Cloudflare and Varnish, the UCSS selector allowlist, and a
+step-by-step check for "too few attributes are shown".
+
 ## Development
 
 ```

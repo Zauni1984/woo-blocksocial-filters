@@ -108,6 +108,32 @@ It is read-only, rate limited per IP, and every parameter is re-sanitised
 server side. It returns nothing a visitor could not already see by loading the
 filtered URL directly.
 
+= It works with one page cache but not another. What do I exclude? =
+
+Filtered pages themselves are fine to cache. Three things must be left alone.
+
+1. The REST route `/wp-json/blocksocial-filters/` must not be cached. It returns
+   the filtered grid and the facet counts together, so a cached response keeps
+   serving counts from before the last index build. LiteSpeed Cache caches the
+   REST API by default; WP Rocket does not.
+2. `assets/js/frontend.js` must not be deferred or delayed. It patches
+   `window.fetch` and `XMLHttpRequest.prototype.open` while it loads so a
+   theme's own endless loading carries the active filters.
+3. `assets/css/frontend.css` must be kept out of UCSS. The collapsed, selected
+   and drawer states are added by JavaScript, so a UCSS scan does not see them.
+
+Also keep the filter parameters (`f_*`, `ordr`, `srch`) out of any "drop query
+string" list. The full list per cache plugin is in docs/CACHING.md.
+
+= Some attribute options are missing from a filter. =
+
+An option whose count is zero is hidden, so this is usually a counting problem
+rather than a display one. Check, in this order: the index is complete under
+Product Filters → Index; the page cache is not serving an old REST response
+(see above); the object cache has been purged; the filter's own "Limit" field,
+which caps how many options show before "Show more". If you want options with
+no matches to stay visible, switch off "Hide empty" on that filter.
+
 == Screenshots ==
 
 1. A vertical filter panel with labels, colour swatches and a price slider.
