@@ -37,10 +37,16 @@ foreach ( $options as $option ) {
 	delete_site_option( $option );
 }
 
-$wpdb->query( // phpcs:ignore WordPress.DB
-	"DELETE FROM {$wpdb->options}
-	 WHERE option_name LIKE '\_transient\_bsf\_%' OR option_name LIKE '\_transient\_timeout\_bsf\_%'"
-);
+// Batched: a shop that ran 1.0.5 or earlier can have millions of orphaned
+// transient rows, and one unbounded DELETE on a table that size either locks it
+// for minutes or times out and rolls everything back.
+do {
+	$removed = (int) $wpdb->query( // phpcs:ignore WordPress.DB
+		"DELETE FROM {$wpdb->options}
+		 WHERE option_name LIKE '\_transient\_bsf\_%' OR option_name LIKE '\_transient\_timeout\_bsf\_%'
+		 LIMIT 2000"
+	);
+} while ( 2000 === $removed );
 
 $wpdb->query( // phpcs:ignore WordPress.DB
 	"DELETE FROM {$wpdb->termmeta}
@@ -48,3 +54,4 @@ $wpdb->query( // phpcs:ignore WordPress.DB
 );
 
 wp_clear_scheduled_hook( 'bsf_process_queue' );
+wp_clear_scheduled_hook( 'bsf_cache_gc' );

@@ -18,6 +18,15 @@ class Cache {
 	public const VERSION_OPTION = 'bsf_cache_version';
 	public const CRON_GC        = 'bsf_cache_gc';
 
+	/** Rows deleted per statement. Small enough not to hold a long lock. */
+	public const GC_BATCH = 2000;
+
+	/** Seconds a shutdown pass may spend deleting before it defers the rest. */
+	public const GC_BUDGET_REQUEST = 2;
+
+	/** Seconds a cron pass may spend. */
+	public const GC_BUDGET_CRON = 20;
+
 	/** @var string|null */
 	private static $version = null;
 
@@ -32,11 +41,19 @@ class Cache {
 	 * request dies before shutdown.
 	 */
 	public static function hooks(): void {
-		add_action( self::CRON_GC, array( __CLASS__, 'collect_garbage' ) );
+		add_action( self::CRON_GC, array( __CLASS__, 'run_cron_gc' ) );
 
 		if ( ! wp_next_scheduled( self::CRON_GC ) ) {
 			wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', self::CRON_GC );
 		}
+	}
+
+	/**
+	 * Cron entry point. Gets a longer budget than a page request and keeps
+	 * chaining itself while there is still something to delete.
+	 */
+	public static function run_cron_gc(): void {
+		self::collect_garbage( self::GC_BUDGET_CRON );
 	}
 
 	/**
@@ -95,17 +112,51 @@ class Cache {
 	/**
 	 * Delete every stored generation except the current one.
 	 *
-	 * Runs once per request that invalidated something, and daily from cron in
-	 * case a request died before shutdown.
+	 * Deletion is batched and time boxed. A shop that ran an older version can
+	 * have millions of orphaned rows, and a single unbounded DELETE on a table
+	 * that size holds a lock long enough to take the site down — or times out
+	 * and rolls the whole thing back. Whatever is left over is picked up by the
+	 * next pass, so this always makes progress and never blocks a request.
+	 *
+	 * @param int $budget Seconds this pass may spend.
+	 *
+	 * @return int Rows deleted.
 	 */
-	public static function collect_garbage(): void {
+	public static function collect_garbage( int $budget = self::GC_BUDGET_REQUEST ): int {
 		self::$garbage = false;
 
 		if ( wp_using_ext_object_cache() ) {
-			return;
+			return 0;
 		}
 
-		self::purge_transients( self::version() );
+		$keep    = self::version();
+		$started = microtime( true );
+		$total   = 0;
+
+		do {
+			$deleted = self::purge_transients( $keep, self::GC_BATCH );
+			$total  += $deleted;
+
+			// A short batch means the table is clean; stop rather than keep
+			// scanning for nothing.
+			if ( $deleted < self::GC_BATCH ) {
+				return $total;
+			}
+		} while ( ( microtime( true ) - $started ) < $budget );
+
+		// Still rows left. Come back shortly instead of holding this request.
+		self::schedule_drain();
+
+		return $total;
+	}
+
+	/**
+	 * Queue one more pass a minute out, without stacking events.
+	 */
+	private static function schedule_drain(): void {
+		if ( wp_next_scheduled( self::CRON_GC ) > time() + 90 || false === wp_next_scheduled( self::CRON_GC ) ) {
+			wp_schedule_single_event( time() + MINUTE_IN_SECONDS, self::CRON_GC );
+		}
 	}
 
 	/**
@@ -177,20 +228,26 @@ class Cache {
 	/**
 	 * Remove transients created by the plugin.
 	 *
-	 * @param string $keep Generation to spare. Empty removes everything, which
-	 *                     is what uninstall wants.
+	 * The prefix is a literal, so `option_name LIKE 'prefix%'` is a range scan
+	 * on the unique key rather than a table scan.
+	 *
+	 * @param string $keep  Generation to spare. Empty removes everything, which
+	 *                      is what uninstall wants.
+	 * @param int    $limit Rows per statement. 0 removes everything at once and
+	 *                      is only safe on a table known to be small.
 	 *
 	 * @return int Rows deleted.
 	 */
-	public static function purge_transients( string $keep = '' ): int {
+	public static function purge_transients( string $keep = '', int $limit = 0 ): int {
 		global $wpdb;
 
 		$value   = $wpdb->esc_like( '_transient_bsf_' ) . '%';
 		$timeout = $wpdb->esc_like( '_transient_timeout_bsf_' ) . '%';
+		$bound   = $limit > 0 ? ' LIMIT ' . absint( $limit ) : '';
 
 		if ( '' === $keep ) {
 			$sql = $wpdb->prepare(
-				"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
+				"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s{$bound}",
 				$value,
 				$timeout
 			);
@@ -198,7 +255,7 @@ class Cache {
 			$sql = $wpdb->prepare(
 				"DELETE FROM {$wpdb->options}
 				  WHERE ( option_name LIKE %s OR option_name LIKE %s )
-				    AND option_name NOT LIKE %s",
+				    AND option_name NOT LIKE %s{$bound}",
 				$value,
 				$timeout,
 				'%' . $wpdb->esc_like( '_bsf_' . $keep . '_' ) . '%'

@@ -73,15 +73,18 @@ class Installer {
 
 		Schema::install();
 
+		Cache::flush();
+
 		// Up to 1.0.5 a flush only bumped the generation stamp and left the
 		// previous generation in wp_options, where nothing ever read it again.
-		// Shops that edit products often accumulated thousands of orphaned
-		// rows, so clear them out once on the way past.
-		if ( is_string( $installed ) && '' !== $installed && version_compare( $installed, '1.0.6', '<' ) ) {
-			Cache::purge_transients();
+		// A busy shop can be sitting on millions of orphaned rows by now, so
+		// this must not be one big DELETE — an upgrade that locks the options
+		// table is worse than the rows are. Cache::flush() above already queued
+		// the batched drain; all this does is make sure it keeps running until
+		// the table is clean.
+		if ( is_string( $installed ) && '' !== $installed && version_compare( $installed, '1.0.6', '<' ) && ! wp_next_scheduled( Cache::CRON_GC ) ) {
+			wp_schedule_single_event( time() + MINUTE_IN_SECONDS, Cache::CRON_GC );
 		}
-
-		Cache::flush();
 
 		update_option( self::VERSION_OPTION, BSF_VERSION, true );
 	}

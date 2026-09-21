@@ -575,6 +575,11 @@ it( 'it deletes the timeout rows', false !== strpos( $gc, '_transient_timeout_bs
 it( 'it spares the current generation', false !== strpos( $gc, 'NOT LIKE' ) );
 it( 'the spared generation is the live one', false !== strpos( $gc, '_bsf_' . $first . '_' ), $gc );
 
+// A shop upgrading from 1.0.5 can be sitting on millions of rows. One
+// unbounded DELETE on a table that size locks it for minutes or times out and
+// rolls back, so every collected batch has to be bounded.
+it( 'garbage collection deletes in bounded batches', false !== strpos( $gc, 'LIMIT ' . \BlockSocial\Filters\Support\Cache::GC_BATCH ), $gc );
+
 // Uninstall wants everything gone, so the keep argument stays optional.
 $wpdb->log = array();
 \BlockSocial\Filters\Support\Cache::purge_transients();
@@ -583,6 +588,12 @@ $all = $unescape( $wpdb->log[0] ?? '' );
 
 it( 'an unscoped purge targets the plugin prefix', false !== strpos( $all, '_transient_bsf_%' ), $all );
 it( 'an unscoped purge removes every generation', false === strpos( $all, 'NOT LIKE' ), $all );
+it( 'an unscoped purge is unbounded so uninstall can drive its own loop', false === strpos( $all, 'LIMIT' ), $all );
+
+$wpdb->log = array();
+\BlockSocial\Filters\Support\Cache::purge_transients( '', 500 );
+
+it( 'a bounded purge carries the limit', false !== strpos( (string) ( $wpdb->log[0] ?? '' ), 'LIMIT 500' ), (string) ( $wpdb->log[0] ?? '' ) );
 
 echo "\n";
 printf( "%d passed, %d failed\n\n", $passed, $failed );

@@ -222,33 +222,81 @@ Bis einschließlich 1.0.5 hat das Plugin beim Invalidieren nur einen
 Generationsstempel hochgezählt und die alte Generation stehen lassen. Deren
 Schlüssel wird nie wieder gelesen, also greift auch WordPress' „beim Lesen
 aufräumen" nicht. In Shops, in denen häufig Produkte gespeichert werden, sind so
-tausende verwaiste Zeilen entstanden:
+**Millionen** verwaister Zeilen entstanden:
 
 ```
 _transient_bsf_178973996593_terms_cfcadee3...
 _transient_bsf_178974042271_terms_cfcadee3...
 ```
 
-Ab **1.0.6** wird jede alte Generation am Ende des Requests gelöscht, ein
-täglicher Cron fängt abgebrochene Requests ab, und pro Request wird höchstens
-eine neue Generation begonnen. Beim Update auf 1.0.6 werden die angesammelten
-Zeilen einmalig entfernt — es ist nichts zu tun.
+Ab **1.0.7** werden alte Generationen gebatcht gelöscht (2.000 Zeilen pro
+Statement, 2 s Budget im Request, 20 s im Cron, danach läuft ein Folge-Cron bis
+die Tabelle sauber ist). Pro Request wird höchstens eine neue Generation
+begonnen.
 
-Wer sofort aufräumen will, ohne auf das Update zu warten:
+> **1.0.6 nicht auf einer großen Tabelle installieren.** Dessen Migration war
+> ein einziges unbegrenztes `DELETE` und blockiert die `wp_options` minutenlang
+> oder läuft in einen Timeout.
 
-```bash
-wp transient delete --all
-```
+### Aufräumen bei Millionen von Zeilen
 
-oder gezielt per SQL (Präfix `wp_` ggf. anpassen):
+Ein einzelnes `DELETE` ohne `LIMIT` läuft nicht durch. Stattdessen in Schleifen.
+
+**Variante A — schonend, Shop bleibt online.** Wiederholt ausführen, bis
+`Rows affected: 0` kommt:
 
 ```sql
 DELETE FROM wp_options
  WHERE option_name LIKE '\_transient\_bsf\_%'
-    OR option_name LIKE '\_transient\_timeout\_bsf\_%';
+    OR option_name LIKE '\_transient\_timeout\_bsf\_%'
+ LIMIT 20000;
 ```
 
-Danach `OPTIMIZE TABLE wp_options;`, damit der Speicher auch freigegeben wird.
+Als Schleife auf der Shell:
+
+```bash
+while true; do
+  n=$(wp db query "DELETE FROM wp_options \
+        WHERE option_name LIKE '\_transient\_bsf\_%' \
+           OR option_name LIKE '\_transient\_timeout\_bsf\_%' \
+        LIMIT 20000; SELECT ROW_COUNT();" --skip-column-names)
+  echo "geloescht: $n"
+  [ "$n" -eq 0 ] && break
+done
+```
+
+Bei 13 Mio. Zeilen sind das rund 650 Durchläufe — je nach Server einige Minuten.
+`option_name` hat einen Unique-Index, `LIKE 'präfix%'` ist also ein Range-Scan
+und kein Table-Scan.
+
+**Variante B — schnell, kurze Schreibpause.** Wenn fast die gesamte Tabelle aus
+diesen Zeilen besteht, ist Umbauen um Größenordnungen schneller als Löschen.
+Vorher Wartungsmodus an, Backup nicht vergessen:
+
+```sql
+CREATE TABLE wp_options_new LIKE wp_options;
+
+INSERT INTO wp_options_new
+SELECT * FROM wp_options
+ WHERE option_name NOT LIKE '\_transient\_bsf\_%'
+   AND option_name NOT LIKE '\_transient\_timeout\_bsf\_%';
+
+RENAME TABLE wp_options TO wp_options_old, wp_options_new TO wp_options;
+```
+
+Kopiert werden nur die echten Optionen (ein paar tausend Zeilen), das dauert
+Sekunden. Danach prüfen, dass der Shop läuft, und erst dann:
+
+```sql
+DROP TABLE wp_options_old;
+```
+
+`DROP TABLE` ist bei `innodb_file_per_table` praktisch ein Dateilöschen und
+gibt den Speicher sofort frei — anders als `DELETE`, nach dem noch
+`OPTIMIZE TABLE wp_options;` nötig wäre (und das die Tabelle erneut sperrt).
+
+**Nicht `wp transient delete --all` bei dieser Größe** — das läuft zeilenweise
+über PHP und dauert um Größenordnungen länger.
 
 ---
 

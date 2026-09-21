@@ -4,7 +4,7 @@ Tags: woocommerce, product filter, attribute filter, variation swatches, ajax fi
 Requires at least: 6.2
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.6
+Stable tag: 1.0.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -143,6 +143,17 @@ no matches to stay visible, switch off "Hide empty" on that filter.
 5. The first index build, with progress.
 
 == Changelog ==
+
+= 1.0.7 =
+* Fixed: the 1.0.6 cleanup was a single unbounded DELETE. On a shop that had
+  accumulated millions of orphaned rows that locks the options table for
+  minutes, or times out and rolls the whole thing back. Do not run 1.0.6 on a
+  large table.
+* Deletion now runs in batches of 2,000 rows with a time budget — two seconds
+  in a page request, twenty in cron — and chains a follow-up run until the
+  table is clean. Progress is never lost and no request blocks.
+* Upgrading no longer deletes anything inline; it only starts the drain.
+* Uninstall deletes in batches too.
 
 = 1.0.6 =
 * Fixed: cache invalidation filled wp_options. A flush bumped a generation
