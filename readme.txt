@@ -4,7 +4,7 @@ Tags: woocommerce, product filter, attribute filter, variation swatches, ajax fi
 Requires at least: 6.2
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -143,6 +143,20 @@ no matches to stay visible, switch off "Hide empty" on that filter.
 5. The first index build, with progress.
 
 == Changelog ==
+
+= 1.0.6 =
+* Fixed: cache invalidation filled wp_options. A flush bumped a generation
+  stamp so that invalidation stayed O(1) under bulk edits, but the previous
+  generation was left behind, and because its keys are never read again
+  WordPress' expire-on-read never collected it. A shop that edits products
+  often accumulated thousands of orphaned `_transient_bsf_*` rows, each one
+  holding a full copy of the term list.
+* Stale generations are now deleted once per request at shutdown, with a daily
+  cron pass as a safety net for requests that die first.
+* A flush starts at most one generation per request. Imports and stock syncs
+  fire the write hooks thousands of times; every one of those used to mean
+  another option write and another abandoned copy.
+* Upgrading from an earlier version clears the accumulated rows once.
 
 = 1.0.5 =
 * Fixed: in a theme's own off canvas mobile sidebar only the filter button was

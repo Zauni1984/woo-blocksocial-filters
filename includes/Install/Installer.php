@@ -57,6 +57,7 @@ class Installer {
 	 */
 	public static function deactivate(): void {
 		wp_clear_scheduled_hook( Indexer::CRON_QUEUE );
+		wp_clear_scheduled_hook( Cache::CRON_GC );
 		flush_rewrite_rules();
 	}
 
@@ -71,6 +72,15 @@ class Installer {
 		}
 
 		Schema::install();
+
+		// Up to 1.0.5 a flush only bumped the generation stamp and left the
+		// previous generation in wp_options, where nothing ever read it again.
+		// Shops that edit products often accumulated thousands of orphaned
+		// rows, so clear them out once on the way past.
+		if ( is_string( $installed ) && '' !== $installed && version_compare( $installed, '1.0.6', '<' ) ) {
+			Cache::purge_transients();
+		}
+
 		Cache::flush();
 
 		update_option( self::VERSION_OPTION, BSF_VERSION, true );

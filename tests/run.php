@@ -532,6 +532,58 @@ $resolved = Colors::resolve( array( 'accent' => 'javascript:alert(1)', 'label_bg
 is_same( 'invalid colours fall back to the default', '#1f6feb', $resolved['accent'] );
 is_same( 'valid overrides win', '#123456', $resolved['label_bg'] );
 
+echo "\nCache generations\n";
+
+// Up to 1.0.5 a flush only bumped the generation stamp. Nothing ever read the
+// previous generation again, so WordPress' expire-on-read never collected it
+// and wp_options filled up with orphaned _transient_bsf_* rows.
+//
+// esc_like() escapes the underscores, so the recorded SQL is compared with the
+// backslashes stripped back out.
+$unescape = static function ( $query ) {
+	return str_replace( '\\', '', (string) $query );
+};
+
+$wpdb->log = array();
+
+\BlockSocial\Filters\Support\Cache::flush();
+
+$first = \BlockSocial\Filters\Support\Cache::version();
+
+\BlockSocial\Filters\Support\Cache::flush();
+\BlockSocial\Filters\Support\Cache::flush();
+
+is_same( 'repeated flushes share one generation per request', $first, \BlockSocial\Filters\Support\Cache::version() );
+
+\BlockSocial\Filters\Support\Cache::collect_garbage();
+
+$deletes = array_values(
+	array_filter(
+		array_map( $unescape, $wpdb->log ),
+		static function ( $query ) {
+			return false !== strpos( $query, 'DELETE' ) && false !== strpos( $query, '_transient_bsf_' );
+		}
+	)
+);
+
+is_same( 'garbage collection issues exactly one delete', 1, count( $deletes ) );
+
+$gc = (string) ( $deletes[0] ?? '' );
+
+it( 'it deletes the value rows', false !== strpos( $gc, '_transient_bsf_%' ) );
+it( 'it deletes the timeout rows', false !== strpos( $gc, '_transient_timeout_bsf_%' ) );
+it( 'it spares the current generation', false !== strpos( $gc, 'NOT LIKE' ) );
+it( 'the spared generation is the live one', false !== strpos( $gc, '_bsf_' . $first . '_' ), $gc );
+
+// Uninstall wants everything gone, so the keep argument stays optional.
+$wpdb->log = array();
+\BlockSocial\Filters\Support\Cache::purge_transients();
+
+$all = $unescape( $wpdb->log[0] ?? '' );
+
+it( 'an unscoped purge targets the plugin prefix', false !== strpos( $all, '_transient_bsf_%' ), $all );
+it( 'an unscoped purge removes every generation', false === strpos( $all, 'NOT LIKE' ), $all );
+
 echo "\n";
 printf( "%d passed, %d failed\n\n", $passed, $failed );
 

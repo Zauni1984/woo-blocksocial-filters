@@ -216,6 +216,42 @@ Optionen, für die der Index keine Treffer kennt, werden ausgeblendet
 
 ---
 
+## 4a. Transients in `wp_options` (bis 1.0.5)
+
+Bis einschließlich 1.0.5 hat das Plugin beim Invalidieren nur einen
+Generationsstempel hochgezählt und die alte Generation stehen lassen. Deren
+Schlüssel wird nie wieder gelesen, also greift auch WordPress' „beim Lesen
+aufräumen" nicht. In Shops, in denen häufig Produkte gespeichert werden, sind so
+tausende verwaiste Zeilen entstanden:
+
+```
+_transient_bsf_178973996593_terms_cfcadee3...
+_transient_bsf_178974042271_terms_cfcadee3...
+```
+
+Ab **1.0.6** wird jede alte Generation am Ende des Requests gelöscht, ein
+täglicher Cron fängt abgebrochene Requests ab, und pro Request wird höchstens
+eine neue Generation begonnen. Beim Update auf 1.0.6 werden die angesammelten
+Zeilen einmalig entfernt — es ist nichts zu tun.
+
+Wer sofort aufräumen will, ohne auf das Update zu warten:
+
+```bash
+wp transient delete --all
+```
+
+oder gezielt per SQL (Präfix `wp_` ggf. anpassen):
+
+```sql
+DELETE FROM wp_options
+ WHERE option_name LIKE '\_transient\_bsf\_%'
+    OR option_name LIKE '\_transient\_timeout\_bsf\_%';
+```
+
+Danach `OPTIMIZE TABLE wp_options;`, damit der Speicher auch freigegeben wird.
+
+---
+
 ## 5. Andere Caches
 
 **WP Rocket** — cached die REST-API nicht, deshalb meist unauffällig. Falls

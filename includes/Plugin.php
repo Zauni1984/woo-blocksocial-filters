@@ -79,6 +79,7 @@ final class Plugin {
 		Installer::maybe_upgrade();
 
 		// Always on: index maintenance, query state, URL handling.
+		Support\Cache::hooks();
 		$this->writer()->hooks();
 		$this->indexer()->hooks();
 		$this->url()->hooks();
