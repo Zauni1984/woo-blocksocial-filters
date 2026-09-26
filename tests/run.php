@@ -608,30 +608,73 @@ it(
 	0 !== strpos( 'bsfrl_x', 'bsf_' )
 );
 
+// The whole render, end to end: with two different selections active, the
+// only rows that may reach the options table are the three bounded ones. This
+// is the guard for the class of bug, not for the instances found so far.
+$allowed = array( '_terms_', '_term_map_', '_url_keys_' );
+
+foreach ( array( array( 'f_color' => 'blue' ), array( 'f_color' => 'blue,red', 'f_size' => 'xl', 'ordr' => 'price' ) ) as $selection ) {
+	$GLOBALS['bsf_test_transients'] = array();
+	$state->set_raw( $selection );
+	( new \BlockSocial\Filters\Frontend\Renderer() )->render_set( $set );
+
+	$stray = array_filter(
+		$GLOBALS['bsf_test_transients'],
+		static function ( $key ) use ( $allowed ) {
+			foreach ( $allowed as $name ) {
+				if ( false !== strpos( $key, $name ) ) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+	);
+
+	is_same( 'a full render with ' . wp_json_encode( $selection ) . ' persists only bounded keys', array(), array_values( $stray ) );
+}
+
+$state->set_raw( array( 'f_color' => 'blue' ) );
+
 echo "\nCache generations\n";
 
-// Up to 1.0.5 a flush only bumped the generation stamp. Nothing ever read the
-// previous generation again, so WordPress' expire-on-read never collected it
-// and wp_options filled up with orphaned _transient_bsf_* rows.
-//
 // esc_like() escapes the underscores, so the recorded SQL is compared with the
 // backslashes stripped back out.
 $unescape = static function ( $query ) {
 	return str_replace( '\\', '', (string) $query );
 };
 
+$cache = '\BlockSocial\Filters\Support\Cache';
+
+// The persisted term lists are hundreds of kilobytes per taxonomy. A product
+// edit is the frequent event on a shop — a stock sync touches thousands — and
+// it must not rotate the stamp those lists are keyed by, or every one of them
+// is rewritten into wp_options after each sync.
+$persisted_before = $cache::persistent_key( 'terms', 'pa_color|name' );
+
+$cache::flush();
+$cache::flush();
+
+is_same( 'a product change leaves the persisted key alone', $persisted_before, $cache::persistent_key( 'terms', 'pa_color|name' ) );
+
+// A term or setting change is the rare event and does rotate it — once per
+// request, however many terms an import touches.
+$GLOBALS['bsf_test_cron'] = array();
+$cache::flush_terms();
+
+$persisted_after = $cache::persistent_key( 'terms', 'pa_color|name' );
+
+it( 'a term change rotates the persisted key', $persisted_before !== $persisted_after );
+
+$cache::flush_terms();
+$cache::flush_terms();
+
+is_same( 'repeated term changes share one generation per request', $persisted_after, $cache::persistent_key( 'terms', 'pa_color|name' ) );
+
+// The previous generation is never read again, so it is deleted rather than
+// left for an expire-on-read that never comes.
 $wpdb->log = array();
-
-\BlockSocial\Filters\Support\Cache::flush();
-
-$first = \BlockSocial\Filters\Support\Cache::version();
-
-\BlockSocial\Filters\Support\Cache::flush();
-\BlockSocial\Filters\Support\Cache::flush();
-
-is_same( 'repeated flushes share one generation per request', $first, \BlockSocial\Filters\Support\Cache::version() );
-
-\BlockSocial\Filters\Support\Cache::collect_garbage();
+$cache::collect_garbage();
 
 $deletes = array_values(
 	array_filter(
@@ -648,17 +691,16 @@ $gc = (string) ( $deletes[0] ?? '' );
 
 it( 'it deletes the value rows', false !== strpos( $gc, '_transient_bsf_%' ) );
 it( 'it deletes the timeout rows', false !== strpos( $gc, '_transient_timeout_bsf_%' ) );
-it( 'it spares the current generation', false !== strpos( $gc, 'NOT LIKE' ) );
-it( 'the spared generation is the live one', false !== strpos( $gc, '_bsf_' . $first . '_' ), $gc );
+it( 'it spares the live terms generation', false !== strpos( $gc, '_bsf_' . $cache::terms_version() . '_' ), $gc );
 
 // A shop upgrading from 1.0.5 can be sitting on millions of rows. One
 // unbounded DELETE on a table that size locks it for minutes or times out and
 // rolls back, so every collected batch has to be bounded.
-it( 'garbage collection deletes in bounded batches', false !== strpos( $gc, 'LIMIT ' . \BlockSocial\Filters\Support\Cache::GC_BATCH ), $gc );
+it( 'garbage collection deletes in bounded batches', false !== strpos( $gc, 'LIMIT ' . $cache::GC_BATCH ), $gc );
 
 // Uninstall wants everything gone, so the keep argument stays optional.
 $wpdb->log = array();
-\BlockSocial\Filters\Support\Cache::purge_transients();
+$cache::purge_transients();
 
 $all = $unescape( $wpdb->log[0] ?? '' );
 
@@ -667,9 +709,45 @@ it( 'an unscoped purge removes every generation', false === strpos( $all, 'NOT L
 it( 'an unscoped purge is unbounded so uninstall can drive its own loop', false === strpos( $all, 'LIMIT' ), $all );
 
 $wpdb->log = array();
-\BlockSocial\Filters\Support\Cache::purge_transients( '', 500 );
+$cache::purge_transients( '', 500 );
 
 it( 'a bounded purge carries the limit', false !== strpos( (string) ( $wpdb->log[0] ?? '' ), 'LIMIT 500' ), (string) ( $wpdb->log[0] ?? '' ) );
+
+echo "\nRate limiter\n";
+
+// One row per address, rewritten in place. The previous key included the
+// minute, which made the key space visitors times minutes — and each row was
+// read only during its own minute, so nothing ever collected it.
+$_SERVER['REMOTE_ADDR'] = '203.0.113.7';
+$GLOBALS['bsf_test_transient_reads'] = true;
+$GLOBALS['bsf_test_transients']      = array();
+
+$request = new WP_REST_Request( 'GET', '/blocksocial-filters/v1/filter' );
+$ajax    = bsf()->ajax();
+
+$ajax->public_permission( $request );
+$ajax->public_permission( $request );
+
+$written = array_values( array_unique( $GLOBALS['bsf_test_transients'] ) );
+
+is_same( 'two requests from one address share one row', 1, count( $written ), wp_json_encode( $GLOBALS['bsf_test_transients'] ) );
+it( 'the rate limiter key sits outside the collector pattern', 0 === strpos( (string) ( $written[0] ?? '' ), 'bsfrl_' ), (string) ( $written[0] ?? '' ) );
+it( 'the counter increments in place', 2 === (int) ( $GLOBALS['bsf_test_transient_store'][ $written[0] ][1] ?? 0 ) );
+
+$_SERVER['REMOTE_ADDR'] = '203.0.113.8';
+$ajax->public_permission( $request );
+
+is_same( 'a second address gets its own row', 2, count( array_unique( $GLOBALS['bsf_test_transients'] ) ) );
+
+$GLOBALS['bsf_test_transient_reads'] = false;
+
+$wpdb->log = array();
+$cache::purge_rate_limits( 200 );
+
+$rl = $unescape( $wpdb->log[0] ?? '' );
+
+it( 'rate limit cleanup targets only its own prefix', false !== strpos( $rl, '_transient_timeout_bsfrl_%' ), $rl );
+it( 'rate limit cleanup is bounded', false !== strpos( $rl, 'LIMIT 200' ), $rl );
 
 echo "\n";
 printf( "%d passed, %d failed\n\n", $passed, $failed );

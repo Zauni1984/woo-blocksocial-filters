@@ -156,7 +156,7 @@ class Settings {
 		update_option( self::OPTION, $merged, true );
 
 		$this->data = null;
-		Cache::flush();
+		Cache::flush_terms();
 	}
 
 	/**

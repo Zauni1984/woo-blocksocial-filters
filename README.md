@@ -223,7 +223,7 @@ step-by-step check for "too few attributes are shown".
 ## Development
 
 ```
-php tests/run.php            # 145 assertions, no dependencies, no WordPress needed
+php tests/run.php            # 154 assertions, no dependencies, no WordPress needed
 node tests/js/bridge.test.js # 15 assertions on the theme request bridge
 composer lint         # php -l across the tree
 composer phpcs        # WordPress coding standards

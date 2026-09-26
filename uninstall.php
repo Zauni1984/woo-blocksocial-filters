@@ -29,6 +29,7 @@ $options = array(
 	'bsf_db_version',
 	'bsf_version',
 	'bsf_cache_version',
+	'bsf_terms_version',
 	'bsf_onboarding_done',
 );
 
@@ -44,6 +45,7 @@ do {
 	$removed = (int) $wpdb->query( // phpcs:ignore WordPress.DB
 		"DELETE FROM {$wpdb->options}
 		 WHERE option_name LIKE '\_transient\_bsf\_%' OR option_name LIKE '\_transient\_timeout\_bsf\_%'
+		    OR option_name LIKE '\_transient\_bsfrl\_%' OR option_name LIKE '\_transient\_timeout\_bsfrl\_%'
 		 LIMIT 2000"
 	);
 } while ( 2000 === $removed );

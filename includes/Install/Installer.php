@@ -73,16 +73,16 @@ class Installer {
 
 		Schema::install();
 
-		Cache::flush();
+		// Everything persisted by the previous version is stale — its key format
+		// may have changed too — so rotate the terms stamp, which also registers
+		// the batched shutdown pass that removes the old generation.
+		Cache::flush_terms();
 
-		// Up to 1.0.5 a flush only bumped the generation stamp and left the
-		// previous generation in wp_options, where nothing ever read it again.
-		// A busy shop can be sitting on millions of orphaned rows by now, so
-		// this must not be one big DELETE — an upgrade that locks the options
-		// table is worse than the rows are. Cache::flush() above already queued
-		// the batched drain; all this does is make sure it keeps running until
-		// the table is clean.
-		if ( is_string( $installed ) && '' !== $installed && version_compare( $installed, '1.0.6', '<' ) && ! wp_next_scheduled( Cache::CRON_GC ) ) {
+		// A shop that ran 1.0.5 or earlier can be sitting on millions of orphaned
+		// rows. That must never be one big DELETE: an upgrade that locks the
+		// options table is worse than the rows are. The shutdown pass above is
+		// time boxed, so make sure cron keeps draining until the table is clean.
+		if ( is_string( $installed ) && '' !== $installed && ! wp_next_scheduled( Cache::CRON_GC ) ) {
 			wp_schedule_single_event( time() + MINUTE_IN_SECONDS, Cache::CRON_GC );
 		}
 

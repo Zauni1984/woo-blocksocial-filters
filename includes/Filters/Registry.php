@@ -107,7 +107,7 @@ class Registry {
 		update_option( self::OPTION, $stored, true );
 
 		$this->sets = null;
-		Cache::flush();
+		Cache::flush_terms();
 
 		return $id;
 	}
@@ -127,7 +127,7 @@ class Registry {
 		update_option( self::OPTION, $stored, true );
 
 		$this->sets = null;
-		Cache::flush();
+		Cache::flush_terms();
 	}
 
 	/**

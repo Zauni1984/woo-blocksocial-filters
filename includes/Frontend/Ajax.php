@@ -8,6 +8,7 @@
 namespace BlockSocial\Filters\Frontend;
 
 use BlockSocial\Filters\Index\Indexer;
+use BlockSocial\Filters\Support\Cache;
 use BlockSocial\Filters\Support\Sanitizer;
 use WP_Error;
 use WP_Query;
@@ -127,16 +128,27 @@ class Ajax {
 			return false;
 		}
 
-		// Deliberately not 'bsf_' + '_': the generation collector matches
+		// One row per address, overwritten in place, so the key space is the
+		// number of distinct visitors rather than visitors times minutes. The
+		// prefix is deliberately not 'bsf_': the generation collector matches
 		// _transient_bsf\_% and would otherwise reset the live counter.
-		$key   = 'bsfrl_' . md5( $ip . gmdate( 'YmdHi' ) );
-		$count = (int) get_transient( $key );
+		$key    = 'bsfrl_' . md5( $ip );
+		$minute = (int) floor( time() / MINUTE_IN_SECONDS );
+		$entry  = get_transient( $key );
+		$count  = is_array( $entry ) && (int) ( $entry[0] ?? 0 ) === $minute ? (int) ( $entry[1] ?? 0 ) : 0;
 
 		if ( $count >= (int) apply_filters( 'bsf_rate_limit', self::RATE_LIMIT ) ) {
 			return true;
 		}
 
-		set_transient( $key, $count + 1, MINUTE_IN_SECONDS );
+		set_transient( $key, array( $minute, $count + 1 ), 2 * MINUTE_IN_SECONDS );
+
+		// Expired rows are never read again, so expire-on-read cannot collect
+		// them. Sweep a bounded batch now and then; the busier the endpoint,
+		// the more often this runs.
+		if ( 1 === wp_rand( 1, 50 ) ) {
+			Cache::purge_rate_limits( 200 );
+		}
 
 		return false;
 	}

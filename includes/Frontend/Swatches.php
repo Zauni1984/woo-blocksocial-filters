@@ -346,7 +346,7 @@ class Swatches {
 	private function loop_terms( int $product_id ): array {
 		global $wpdb;
 
-		return (array) Cache::remember_persisted(
+		return (array) Cache::remember(
 			Cache::key( 'loop_swatches', $product_id ),
 			static function () use ( $wpdb, $product_id ) {
 				$table = Schema::table_index();

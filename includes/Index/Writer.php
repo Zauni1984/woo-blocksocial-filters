@@ -43,6 +43,7 @@ class Writer {
 		add_action( 'untrashed_post', array( $this, 'touch' ) );
 		add_action( 'before_delete_post', array( $this, 'on_removed' ) );
 
+		add_action( 'created_term', array( $this, 'on_term_changed' ), 10, 3 );
 		add_action( 'edited_term', array( $this, 'on_term_changed' ), 10, 3 );
 		add_action( 'delete_term', array( $this, 'on_term_changed' ), 10, 3 );
 
@@ -159,7 +160,7 @@ class Writer {
 		unset( $term_id, $tt_id );
 
 		if ( 0 === strpos( (string) $taxonomy, 'pa_' ) || in_array( $taxonomy, array( 'product_cat', 'product_tag' ), true ) ) {
-			Cache::flush();
+			Cache::flush_terms();
 		}
 	}
 

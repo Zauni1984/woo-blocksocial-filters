@@ -4,7 +4,7 @@ Tags: woocommerce, product filter, attribute filter, variation swatches, ajax fi
 Requires at least: 6.2
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.8
+Stable tag: 1.0.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -143,6 +143,28 @@ no matches to stay visible, switch off "Hide empty" on that filter.
 5. The first index build, with progress.
 
 == Changelog ==
+
+= 1.0.9 =
+* Audit of every database write path after the options table incident. What
+  was found and changed:
+* Persisted term lists were keyed by a stamp that rotated on every product
+  edit, so after each stock sync every taxonomy's term list (hundreds of
+  kilobytes each) was rewritten into wp_options. Term and configuration data
+  now has its own stamp that only term and setting changes rotate; a product
+  edit no longer touches the options table at all.
+* The rate limiter wrote one row per visitor per minute and only ever read it
+  during that minute, so nothing collected the rows. It now keeps one row per
+  address, rewritten in place, and sweeps expired rows in bounded batches from
+  the endpoint itself so cleanup scales with traffic.
+* Per-product loop swatch data is no longer persisted; it is one indexed query.
+* Newly created attribute terms now invalidate the term lists (created_term
+  was not hooked), so they appear at once rather than after the cache expires.
+* Tests: an end-to-end render under two different selections asserts that only
+  the three bounded key names reach the options table, and that a product
+  change leaves the persisted key untouched.
+* Checked and found bounded: the queue table (ON DUPLICATE KEY on product id),
+  the index tables (delete then insert per product), term meta (fixed keys per
+  term), plain options (fixed names), cron (WordPress refuses duplicate events).
 
 = 1.0.8 =
 * Fixed the actual cause of the options table filling up, which 1.0.6 and 1.0.7

@@ -232,6 +232,28 @@ verschont die aktuelle Generation, und genau dort entstehen diese Zeilen.
 Requests gehalten. Ein persistenter Object Cache (Redis/Memcached) nimmt es
 weiterhin, weil er verdrängt — die Optionstabelle sieht es nie.
 
+**Ab 1.0.9** fasst eine Produktänderung die Optionstabelle gar nicht mehr an.
+Die persistierten Term-Listen hängen an einem eigenen Stempel, den nur Term-
+und Einstellungsänderungen drehen. Vorher hat jeder Stock-Sync alle Listen neu
+geschrieben. Der Rate-Limiter hält eine Zeile pro Adresse statt pro Adresse und
+Minute und räumt abgelaufene Zeilen selbst weg.
+
+Was das Plugin in `wp_options` überhaupt noch schreibt — vollständige Liste:
+
+| Was | Anzahl | Wann |
+| --- | --- | --- |
+| `bsf_settings`, `bsf_filter_sets`, `bsf_attribute_display`, `bsf_numeric_meta_keys`, `bsf_version`, `bsf_db_version`, `bsf_fulltext`, `bsf_onboarding_done` | je 1 | beim Speichern von Einstellungen |
+| `bsf_index_state` | 1 | während eines Index-Laufs |
+| `bsf_cache_version` | 1 | nur mit Object Cache |
+| `bsf_terms_version` | 1 | bei Term-/Einstellungsänderung |
+| `_transient_bsf_<stempel>_terms_<hash>` | 1 pro Taxonomie und Sortierung | beim ersten Rendern nach Term-Änderung |
+| `_transient_bsf_<stempel>_term_map_<hash>` | 1 pro Taxonomie | dito |
+| `_transient_bsf_<stempel>_url_keys_` | 1 | dito |
+| `_transient_bsfrl_<hash>` | 1 pro Besucher-Adresse, überschrieben | bei AJAX-Filteraufrufen |
+| `cron`-Eintrag `bsf_cache_gc`, `bsf_process_queue` | je 1 | fest |
+
+Alles andere lebt nur im Request.
+
 ### Akut: der Server ist schon überlastet
 
 Meldet phpMyAdmin `#2006 - MySQL server has gone away`, schon bei `SET NAMES`,

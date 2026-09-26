@@ -148,7 +148,7 @@ class TermMeta {
 		$this->update_meta( $term_id, 'bsf_image', $image_id ? (string) $image_id : '' );
 		$this->update_meta( $term_id, 'bsf_tooltip', $tooltip );
 
-		Cache::flush();
+		Cache::flush_terms();
 	}
 
 	/**

@@ -95,16 +95,72 @@ function delete_option( $name ) {
 	return true;
 }
 
+$GLOBALS['bsf_test_transient_store'] = array();
+$GLOBALS['bsf_test_transient_reads'] = false; // Opt in per test; a shared store would let one test read another's stale value.
+
 function get_transient( $key ) {
-	return false;
+	if ( ! $GLOBALS['bsf_test_transient_reads'] ) {
+		return false;
+	}
+
+	return $GLOBALS['bsf_test_transient_store'][ $key ] ?? false;
 }
 
-// Recorded so tests can assert that an unbounded key space never reaches the
-// options table.
+// Every write is recorded so tests can assert that an unbounded key space never
+// reaches the options table; the store lets a rewrite in place be observed.
 function set_transient( $key, $value, $ttl = 0 ) {
 	$GLOBALS['bsf_test_transients'][] = $key;
+	$GLOBALS['bsf_test_transient_store'][ $key ] = $value;
 
 	return true;
+}
+
+/* ----------------------------------------------------------------------
+ * Cron
+ * ---------------------------------------------------------------------- */
+
+$GLOBALS['bsf_test_cron'] = array();
+
+function wp_next_scheduled( $hook, $args = array() ) {
+	return $GLOBALS['bsf_test_cron'][ $hook ] ?? false;
+}
+
+function wp_schedule_event( $timestamp, $recurrence, $hook, $args = array() ) {
+	$GLOBALS['bsf_test_cron'][ $hook ] = $timestamp;
+
+	return true;
+}
+
+function wp_schedule_single_event( $timestamp, $hook, $args = array() ) {
+	$GLOBALS['bsf_test_cron'][ $hook ] = $timestamp;
+
+	return true;
+}
+
+function wp_clear_scheduled_hook( $hook, $args = array() ) {
+	unset( $GLOBALS['bsf_test_cron'][ $hook ] );
+
+	return 0;
+}
+
+if ( ! class_exists( 'WP_REST_Request' ) ) {
+	class WP_REST_Request {
+		private $params = array();
+
+		public function __construct( $method = 'GET', $route = '' ) {}
+
+		public function set_param( $key, $value ) {
+			$this->params[ $key ] = $value;
+		}
+
+		public function get_param( $key ) {
+			return $this->params[ $key ] ?? null;
+		}
+
+		public function get_params() {
+			return $this->params;
+		}
+	}
 }
 
 function wp_using_ext_object_cache() {
