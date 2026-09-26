@@ -127,7 +127,9 @@ class Ajax {
 			return false;
 		}
 
-		$key   = 'bsf_rl_' . md5( $ip . gmdate( 'YmdHi' ) );
+		// Deliberately not 'bsf_' + '_': the generation collector matches
+		// _transient_bsf\_% and would otherwise reset the live counter.
+		$key   = 'bsfrl_' . md5( $ip . gmdate( 'YmdHi' ) );
 		$count = (int) get_transient( $key );
 
 		if ( $count >= (int) apply_filters( 'bsf_rate_limit', self::RATE_LIMIT ) ) {

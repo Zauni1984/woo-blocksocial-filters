@@ -436,7 +436,7 @@ class UrlManager {
 	 * @return array<string,bool>
 	 */
 	public function known_keys(): array {
-		return (array) Cache::remember(
+		return (array) Cache::remember_persisted(
 			Cache::key( 'url_keys' ),
 			static function () {
 				$keys = array();

@@ -561,7 +561,7 @@ class QueryState {
 			return $this->term_maps[ $taxonomy ];
 		}
 
-		$map = Cache::remember(
+		$map = Cache::remember_persisted(
 			Cache::key( 'term_map', $taxonomy ),
 			static function () use ( $taxonomy ) {
 				$terms = get_terms(

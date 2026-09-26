@@ -216,62 +216,66 @@ Optionen, für die der Index keine Treffer kennt, werden ausgeblendet
 
 ---
 
-## 4a. Transients in `wp_options` (bis 1.0.5)
+## 4a. `wp_options` läuft voll (bis 1.0.7)
 
-Bis einschließlich 1.0.5 hat das Plugin beim Invalidieren nur einen
-Generationsstempel hochgezählt und die alte Generation stehen lassen. Deren
-Schlüssel wird nie wieder gelesen, also greift auch WordPress' „beim Lesen
-aufräumen" nicht. In Shops, in denen häufig Produkte gespeichert werden, sind so
-**Millionen** verwaister Zeilen entstanden:
+**Ursache.** Bis 1.0.7 wurden Produktanzahl, Treffer-IDs und Facetten-Zähler
+unter einem Schlüssel gecacht, der aus der Filterauswahl gebaut war. Dieser
+Schlüsselraum ist kombinatorisch — ein Crawler, der Filterlinks abläuft, besucht
+beliebig viele Kombinationen, und jede schrieb mehrere Zeilen, die niemand
+je wieder liest. `wp_options` hat keine Verdrängung, also bleiben sie liegen.
+Ein Shop kam so auf über 13 Millionen Zeilen.
 
-```
-_transient_bsf_178973996593_terms_cfcadee3...
-_transient_bsf_178974042271_terms_cfcadee3...
-```
+Nur den Aufräum-Job zu reparieren (1.0.6 / 1.0.7) hilft dabei **nicht**: der
+verschont die aktuelle Generation, und genau dort entstehen diese Zeilen.
 
-Ab **1.0.7** werden alte Generationen gebatcht gelöscht (2.000 Zeilen pro
-Statement, 2 s Budget im Request, 20 s im Cron, danach läuft ein Folge-Cron bis
-die Tabelle sauber ist). Pro Request wird höchstens eine neue Generation
-begonnen.
+**Ab 1.0.8** wird alles, was an einer Filterauswahl hängt, nur für die Dauer des
+Requests gehalten. Ein persistenter Object Cache (Redis/Memcached) nimmt es
+weiterhin, weil er verdrängt — die Optionstabelle sieht es nie.
 
-> **1.0.6 nicht auf einer großen Tabelle installieren.** Dessen Migration war
-> ein einziges unbegrenztes `DELETE` und blockiert die `wp_options` minutenlang
-> oder läuft in einen Timeout.
+### Akut: der Server ist schon überlastet
 
-### Aufräumen bei Millionen von Zeilen
+Meldet phpMyAdmin `#2006 - MySQL server has gone away`, schon bei `SET NAMES`,
+dann stirbt die Verbindung **vor** deiner Query. Erst Last wegnehmen:
 
-Ein einzelnes `DELETE` ohne `LIMIT` läuft nicht durch. Stattdessen in Schleifen.
+1. **Plugin deaktivieren.** Kein wp-admin erreichbar? Ordner
+   `wp-content/plugins/woo-blocksocial-filters` per Dateimanager/FTP umbenennen —
+   WordPress deaktiviert es dann selbst. Damit hört das Schreiben sofort auf.
+2. Danach erst löschen.
 
-**Variante A — schonend, Shop bleibt online.** Wiederholt ausführen, bis
-`Rows affected: 0` kommt:
+### Löschen auf Shared Hosting
+
+`LIMIT 20000` ist dort zu groß. Klein anfangen:
 
 ```sql
 DELETE FROM wp_options
  WHERE option_name LIKE '\_transient\_bsf\_%'
     OR option_name LIKE '\_transient\_timeout\_bsf\_%'
- LIMIT 20000;
+ LIMIT 1000;
 ```
 
-Als Schleife auf der Shell:
+Wiederholen, bis `0 rows affected`. Läuft auch das in `#2006`, auf `LIMIT 200`
+runter. Jeder Durchlauf ist in sich abgeschlossen — abbrechen verliert nichts.
+
+Über SSH ist es deutlich angenehmer, weil kein Web-Timeout dazwischenkommt:
 
 ```bash
 while true; do
   n=$(wp db query "DELETE FROM wp_options \
         WHERE option_name LIKE '\_transient\_bsf\_%' \
            OR option_name LIKE '\_transient\_timeout\_bsf\_%' \
-        LIMIT 20000; SELECT ROW_COUNT();" --skip-column-names)
-  echo "geloescht: $n"
-  [ "$n" -eq 0 ] && break
+        LIMIT 5000; SELECT ROW_COUNT();" --skip-column-names)
+  echo "geloescht: $n"; [ "$n" -eq 0 ] && break
+  sleep 1
 done
 ```
 
-Bei 13 Mio. Zeilen sind das rund 650 Durchläufe — je nach Server einige Minuten.
-`option_name` hat einen Unique-Index, `LIKE 'präfix%'` ist also ein Range-Scan
-und kein Table-Scan.
+Das `sleep 1` gibt der Datenbank zwischen den Batches Luft.
 
-**Variante B — schnell, kurze Schreibpause.** Wenn fast die gesamte Tabelle aus
-diesen Zeilen besteht, ist Umbauen um Größenordnungen schneller als Löschen.
-Vorher Wartungsmodus an, Backup nicht vergessen:
+### Schneller: Tabelle umbauen
+
+Bei Millionen Zeilen sind tausende Einzel-Deletes über phpMyAdmin unrealistisch.
+Umbauen sind drei Statements, kopiert werden nur die echten Optionen. Vorher
+**Backup** und Wartungsmodus:
 
 ```sql
 CREATE TABLE wp_options_new LIKE wp_options;
@@ -284,19 +288,17 @@ SELECT * FROM wp_options
 RENAME TABLE wp_options TO wp_options_old, wp_options_new TO wp_options;
 ```
 
-Kopiert werden nur die echten Optionen (ein paar tausend Zeilen), das dauert
-Sekunden. Danach prüfen, dass der Shop läuft, und erst dann:
+Shop prüfen, dann `DROP TABLE wp_options_old;` — bei
+`innodb_file_per_table` praktisch ein Dateilöschen, gibt den Platz sofort frei.
+Nach der `DELETE`-Variante bräuchtest du noch `OPTIMIZE TABLE wp_options;`, was
+die Tabelle erneut sperrt.
 
-```sql
-DROP TABLE wp_options_old;
-```
+Der `INSERT ... SELECT` liest die große Tabelle einmal durch. Stirbt auch das am
+Timeout, lass es den Hoster über eine Shell-Verbindung laufen — dort gibt es
+kein Web-Limit.
 
-`DROP TABLE` ist bei `innodb_file_per_table` praktisch ein Dateilöschen und
-gibt den Speicher sofort frei — anders als `DELETE`, nach dem noch
-`OPTIMIZE TABLE wp_options;` nötig wäre (und das die Tabelle erneut sperrt).
-
-**Nicht `wp transient delete --all` bei dieser Größe** — das läuft zeilenweise
-über PHP und dauert um Größenordnungen länger.
+**Nicht `wp transient delete --all`** bei dieser Größe: das geht zeilenweise
+durch PHP.
 
 ---
 

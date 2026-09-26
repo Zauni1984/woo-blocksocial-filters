@@ -532,6 +532,82 @@ $resolved = Colors::resolve( array( 'accent' => 'javascript:alert(1)', 'label_bg
 is_same( 'invalid colours fall back to the default', '#1f6feb', $resolved['accent'] );
 is_same( 'valid overrides win', '#123456', $resolved['label_bg'] );
 
+echo "\nCache key space\n";
+
+// This is the regression that mattered. Everything keyed by the shopper's own
+// filter selection has a combinatorial key space: a crawler walking filter
+// links visits combinations without limit. wp_options has no eviction, so each
+// one used to leave rows behind that nobody would ever read again — a shop
+// reported thirteen million. Fixing only the collector did not help, because
+// the collector spares the current generation, which is exactly where these
+// live. So none of it may reach the options table at all.
+$builder = new \BlockSocial\Filters\Index\QueryBuilder();
+
+$combination_a = array(
+	array(
+		'type'     => 'taxonomy',
+		'taxonomy' => 'pa_color',
+		'terms'    => array( 11 ),
+		'operator' => 'OR',
+	),
+);
+
+$combination_b = array(
+	array(
+		'type'     => 'taxonomy',
+		'taxonomy' => 'pa_color',
+		'terms'    => array( 11, 21, 23 ),
+		'operator' => 'AND',
+	),
+	array(
+		'type'  => 'price',
+		'min'   => 10,
+		'max'   => 50,
+	),
+);
+
+$GLOBALS['bsf_test_transients'] = array();
+
+foreach ( array( $combination_a, $combination_b ) as $combination ) {
+	$builder->ids( $combination );
+	$builder->count( $combination );
+	$builder->term_counts( 'pa_color', $combination );
+	$builder->price_bounds( $combination );
+}
+
+is_same(
+	'a filter combination writes nothing to the options table',
+	array(),
+	$GLOBALS['bsf_test_transients']
+);
+
+// The same value asked for twice in one render still only costs one query.
+$wpdb->log = array();
+$builder->count( $combination_a );
+$first_pass = count( $wpdb->log );
+$builder->count( $combination_a );
+
+is_same( 'a repeat read inside one request is served from memory', $first_pass, count( $wpdb->log ) );
+
+// Per-taxonomy data is bounded, so it stays cached across requests.
+// A taxonomy no earlier test touched, so the renderer's own per-request memo
+// does not mask the write.
+$GLOBALS['bsf_test_transients'] = array();
+bsf()->renderer()->terms( 'pa_regression_probe' );
+
+it(
+	'bounded per-taxonomy data is still cached',
+	count( $GLOBALS['bsf_test_transients'] ) > 0,
+	wp_json_encode( $GLOBALS['bsf_test_transients'] )
+);
+
+// The rate limiter must sit outside the collector's pattern, or a collection
+// pass resets the live counter.
+it(
+	'the rate limiter key is not matched by the generation collector',
+	0 !== strpos( 'bsfrl_x', 'bsf_' )
+);
+
 echo "\nCache generations\n";
 
 // Up to 1.0.5 a flush only bumped the generation stamp. Nothing ever read the

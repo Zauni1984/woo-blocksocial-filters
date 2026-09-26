@@ -1000,7 +1000,7 @@ class Renderer {
 			return $this->term_cache[ $cache_key ];
 		}
 
-		$terms = Cache::remember(
+		$terms = Cache::remember_persisted(
 			Cache::key( 'terms', $cache_key ),
 			static function () use ( $taxonomy, $orderby ) {
 				$args = array(

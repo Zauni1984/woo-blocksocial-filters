@@ -4,7 +4,7 @@ Tags: woocommerce, product filter, attribute filter, variation swatches, ajax fi
 Requires at least: 6.2
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.7
+Stable tag: 1.0.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -143,6 +143,24 @@ no matches to stay visible, switch off "Hide empty" on that filter.
 5. The first index build, with progress.
 
 == Changelog ==
+
+= 1.0.8 =
+* Fixed the actual cause of the options table filling up, which 1.0.6 and 1.0.7
+  did not address. Product counts, matching ids and facet counts were cached
+  under a key built from the shopper's filter selection. That key space is
+  combinatorial, and a crawler walking filter links visits combinations without
+  limit — so every visit wrote several rows that nothing would ever read again.
+  Fixing only the collector could not help: it spares the current generation,
+  which is exactly where those rows live.
+* Anything keyed by a filter selection is now held for the length of the request
+  instead, which is where the repeat reads are. A persistent object cache still
+  takes them, because it evicts; the options table never sees them.
+* Cache::remember() is request scoped by default and Cache::remember_persisted()
+  is the explicit opt-in, so a new call site cannot reintroduce this by
+  forgetting a flag. Covered by a regression test that fails if a filter
+  combination writes anything to the options table.
+* The rate limiter no longer shares a prefix with the generation collector,
+  which used to reset the live counter, and its expired rows are collected.
 
 = 1.0.7 =
 * Fixed: the 1.0.6 cleanup was a single unbounded DELETE. On a shop that had

@@ -23,6 +23,7 @@ define( 'DAY_IN_SECONDS', 86400 );
 
 $GLOBALS['bsf_test_options']  = array();
 $GLOBALS['bsf_test_queries']  = array();
+$GLOBALS['bsf_test_transients'] = array();
 $GLOBALS['bsf_test_terms']    = array();
 $GLOBALS['bsf_test_filters']  = array();
 
@@ -98,7 +99,11 @@ function get_transient( $key ) {
 	return false;
 }
 
+// Recorded so tests can assert that an unbounded key space never reaches the
+// options table.
 function set_transient( $key, $value, $ttl = 0 ) {
+	$GLOBALS['bsf_test_transients'][] = $key;
+
 	return true;
 }
 

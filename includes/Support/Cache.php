@@ -36,6 +36,9 @@ class Cache {
 	/** @var bool Whether stale generations are waiting to be deleted. */
 	private static $garbage = false;
 
+	/** @var array<string,mixed> Values held for this request only. */
+	private static $memo = array();
+
 	/**
 	 * Register the safety net that collects stale generations even when a
 	 * request dies before shutdown.
@@ -54,6 +57,7 @@ class Cache {
 	 */
 	public static function run_cron_gc(): void {
 		self::collect_garbage( self::GC_BUDGET_CRON );
+		self::purge_rate_limits();
 	}
 
 	/**
@@ -151,6 +155,33 @@ class Cache {
 	}
 
 	/**
+	 * Drop rate limiter counters whose minute has passed.
+	 *
+	 * They are read once and never again, so WordPress' expire-on-read never
+	 * collects them either. Bounded like everything else here.
+	 *
+	 * @return int Rows deleted.
+	 */
+	public static function purge_rate_limits(): int {
+		global $wpdb;
+
+		return (int) $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL
+			$wpdb->prepare(
+				"DELETE value, timeout
+				   FROM {$wpdb->options} timeout
+				   JOIN {$wpdb->options} value
+				     ON value.option_name = CONCAT( '_transient_', SUBSTRING( timeout.option_name, 20 ) )
+				  WHERE timeout.option_name LIKE %s
+				    AND CAST( timeout.option_value AS UNSIGNED ) < %d
+				  LIMIT %d",
+				$wpdb->esc_like( '_transient_timeout_bsfrl_' ) . '%',
+				time(),
+				self::GC_BATCH
+			)
+		);
+	}
+
+	/**
 	 * Queue one more pass a minute out, without stacking events.
 	 */
 	private static function schedule_drain(): void {
@@ -179,6 +210,10 @@ class Cache {
 	 * @return mixed Value or false when missing.
 	 */
 	public static function get( string $key ) {
+		if ( array_key_exists( $key, self::$memo ) ) {
+			return self::$memo[ $key ];
+		}
+
 		if ( wp_using_ext_object_cache() ) {
 			return wp_cache_get( $key, self::GROUP );
 		}
@@ -189,13 +224,26 @@ class Cache {
 	/**
 	 * Store a value.
 	 *
-	 * @param string $key   Cache key.
-	 * @param mixed  $value Value.
-	 * @param int    $ttl   Lifetime in seconds.
+	 * @param string $key     Cache key.
+	 * @param mixed  $value   Value.
+	 * @param int    $ttl     Lifetime in seconds.
+	 * @param bool   $persist Whether the value may outlive the request. Only
+	 *                        true for a key space with a known small bound.
 	 */
-	public static function set( string $key, $value, int $ttl = 3600 ): void {
+	public static function set( string $key, $value, int $ttl = 3600, bool $persist = false ): void {
 		if ( wp_using_ext_object_cache() ) {
 			wp_cache_set( $key, $value, self::GROUP, $ttl );
+
+			return;
+		}
+
+		// Default to this request only. wp_options has no eviction, so anything
+		// stored there with an unbounded key space is a row that stays until
+		// something deletes it. Opting in per call site made it one forgotten
+		// flag away from filling the table again, so the safe behaviour is the
+		// one you get by saying nothing.
+		if ( ! $persist ) {
+			self::$memo[ $key ] = $value;
 
 			return;
 		}
@@ -205,6 +253,11 @@ class Cache {
 
 	/**
 	 * Fetch from cache or compute and store.
+	 *
+	 * Held for this request unless a persistent object cache is present, which
+	 * evicts and can therefore take anything. Use this for whatever is keyed by
+	 * the shopper's own filter selection: that key space is combinatorial, and a
+	 * crawler walking filter links visits combinations without limit.
 	 *
 	 * @param string   $key      Cache key.
 	 * @param callable $callback Producer.
@@ -220,7 +273,33 @@ class Cache {
 		}
 
 		$value = $callback();
-		self::set( $key, $value, $ttl );
+		self::set( $key, $value, $ttl, false );
+
+		return $value;
+	}
+
+	/**
+	 * Fetch or compute, and keep the result across requests.
+	 *
+	 * Only for a key space with a known small bound — one entry per taxonomy or
+	 * per product, not one per filter combination. Without a persistent object
+	 * cache this writes a row into wp_options, and that table never evicts.
+	 *
+	 * @param string   $key      Cache key.
+	 * @param callable $callback Producer.
+	 * @param int      $ttl      Lifetime.
+	 *
+	 * @return mixed
+	 */
+	public static function remember_persisted( string $key, callable $callback, int $ttl = 3600 ) {
+		$cached = self::get( $key );
+
+		if ( false !== $cached ) {
+			return $cached;
+		}
+
+		$value = $callback();
+		self::set( $key, $value, $ttl, true );
 
 		return $value;
 	}
